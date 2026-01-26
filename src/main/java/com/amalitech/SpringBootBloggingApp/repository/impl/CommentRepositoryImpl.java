@@ -53,4 +53,9 @@ public class CommentRepositoryImpl implements CommentRepository {
         var query = new Query(Criteria.where("postId").is(postId));
         return mongoTemplate.find(query, Comment.class, "comments");
     }
+
+    public List<Comment> findByUserId(String userId) {
+        var query = new Query(Criteria.where("userId").is(userId));
+        return mongoTemplate.find(query, Comment.class, "comments");
+    }
 }

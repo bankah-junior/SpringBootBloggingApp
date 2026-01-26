@@ -1,11 +1,21 @@
 package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.LoginRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.RegisterRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserDetailRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.UserRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.UserService;
 
+import com.amalitech.SpringBootBloggingApp.util.JwtUtil;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static com.amalitech.SpringBootBloggingApp.util.PasswordUtil.verifyPassword;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -18,5 +28,186 @@ public class UserServiceImpl implements UserService {
         this.userCache = userCache;
     }
 
+    @Override
+    public UserResponse create(RegisterRequest user) {
+        User registerUser = new User(
+                null,
+                user.getUsername(),
+                user.getEmail(),
+                user.getPassword(),
+                System.currentTimeMillis(),
+                null
+        );
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return null;
+        }
+        User saved = userRepository.save(registerUser);
+        if (saved != null) {
+            userCache.put(saved.getId(), saved);
+        }
+        String token = JwtUtil.generateToken(saved.getId(), user.getEmail());
+        return new UserResponse(
+                saved.getId(),
+                saved.getUsername(),
+                saved.getEmail(),
+                saved.getCreatedAt(),
+                saved.getUpdatedAt(),
+                token
+        );
+
+    }
+
+    @Override
+    public UserResponse login(LoginRequest user) {
+        if (userRepository.findByEmail(user.getEmail()).isEmpty()){
+            return null;
+        } else {
+            User loggedIn = userRepository.findByEmail(user.getEmail()).get();
+            if (!verifyPassword(user.getPassword(), loggedIn.getPasswordHash())) {
+                return null;
+            }
+            String token = JwtUtil.generateToken(loggedIn.getId(), loggedIn.getEmail());
+            return new UserResponse(
+                    loggedIn.getId(),
+                    loggedIn.getUsername(),
+                    loggedIn.getEmail(),
+                    loggedIn.getCreatedAt(),
+                    loggedIn.getUpdatedAt(),
+                    token
+            );
+        }
+    }
+
+    @Override
+    public UserResponse update(UpdateUserRequest user) {
+        User updateUser = new User(
+                null,
+                user.getUsername(),
+                user.getEmail(),
+                user.getPassword(),
+                null,
+                System.currentTimeMillis()
+        );
+        if (userRepository.update(updateUser)) {
+            userCache.put(updateUser.getId(), updateUser);
+            String token = JwtUtil.generateToken(updateUser.getId(), updateUser.getEmail());
+            return new UserResponse(
+                    updateUser.getId(),
+                    updateUser.getUsername(),
+                    updateUser.getEmail(),
+                    updateUser.getCreatedAt(),
+                    updateUser.getUpdatedAt(),
+                    token
+            );
+        }
+        return null;
+    }
+
+    @Override
+    public boolean delete(String userId) {
+        boolean deleted = userRepository.deleteById(userId);
+        if (deleted) {
+            userCache.remove(userId);
+        }
+        return deleted;
+    }
+
+    @Override
+    public UserResponse getById(String userId) {
+        User foundUser = userRepository.findById(userId).orElse(null);
+        if (foundUser == null) {
+            return null;
+        }
+        String token = JwtUtil.generateToken(foundUser.getId(), foundUser.getEmail());
+        return new UserResponse(
+                foundUser.getId(),
+                foundUser.getUsername(),
+                foundUser.getEmail(),
+                foundUser.getCreatedAt(),
+                foundUser.getUpdatedAt(),
+                token
+        );
+    }
+
+    @Override
+    public UserResponse getByEmail(String email) {
+        User foundUser = userRepository.findByEmail(email).orElse(null);
+        if (foundUser == null) {
+            return null;
+        }
+        String token = JwtUtil.generateToken(foundUser.getId(), foundUser.getEmail());
+        return new UserResponse(
+                foundUser.getId(),
+                foundUser.getUsername(),
+                foundUser.getEmail(),
+                foundUser.getCreatedAt(),
+                foundUser.getUpdatedAt(),
+                token
+        );
+    }
+
+    @Override
+    public List<UserResponse> getAll() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(user -> {
+            String token = JwtUtil.generateToken(user.getId(), user.getEmail());
+            return new UserResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    token
+            );
+        }).toList();
+    }
+
+    @Override
+    public boolean updateUserDetails(UpdateUserDetailRequest user) {
+        User updateUser = new User(
+                null,
+                user.getUsername(),
+                user.getEmail(),
+                null,
+                null,
+                System.currentTimeMillis()
+        );
+        boolean updated = userRepository.update(updateUser);
+        if (updated) {
+            userCache.put(updateUser.getId(), updateUser);
+        }
+        return updated;
+    }
+
+    @Override
+    public boolean changePassword(String userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null || !verifyPassword(oldPassword, user.getPasswordHash())) {
+            return false;
+        }
+        user.setPasswordHash(newPassword);
+        boolean updated = userRepository.update(user);
+        if (updated) {
+            userCache.put(user.getId(), user);
+        }
+        return updated;
+    }
+
+    @Override
+    public UserResponse getByUsername(String username) {
+        User foundUser = userRepository.findByUsername(username).orElse(null);
+        if (foundUser == null) {
+            return null;
+        }
+        String token = JwtUtil.generateToken(foundUser.getId(), foundUser.getEmail());
+        return new UserResponse(
+                foundUser.getId(),
+                foundUser.getUsername(),
+                foundUser.getEmail(),
+                foundUser.getCreatedAt(),
+                foundUser.getUpdatedAt(),
+                token
+        );
+    }
 }
 

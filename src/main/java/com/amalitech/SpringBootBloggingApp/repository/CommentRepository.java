@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface CommentRepository extends BaseRepository<Comment> {
     List<Comment> findByPostId(String postId);
+    List<Comment> findByUserId(String userId);
 }

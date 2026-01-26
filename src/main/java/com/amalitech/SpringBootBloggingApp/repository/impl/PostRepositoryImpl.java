@@ -62,4 +62,10 @@ public class PostRepositoryImpl implements PostRepository {
         var query = new Query(Criteria.where("title").regex(".*" + keyword + ".*", "i"));
         return mongoTemplate.find(query, Post.class, "posts");
     }
+
+    @Override
+    public List<Post> findByTagName(String tagName) {
+        var query = new Query(Criteria.where("tags").is(tagName));
+        return mongoTemplate.find(query, Post.class, "posts");
+    }
 }

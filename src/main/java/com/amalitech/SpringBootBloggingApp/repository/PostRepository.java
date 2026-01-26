@@ -9,4 +9,6 @@ public interface PostRepository extends BaseRepository<Post> {
     List<Post> findByAuthorId(String authorId);
 
     List<Post> searchByTitle(String keyword);
+
+    List<Post> findByTagName(String tagName);
 }
