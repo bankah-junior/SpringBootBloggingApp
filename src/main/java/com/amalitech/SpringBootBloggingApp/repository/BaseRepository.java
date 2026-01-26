@@ -15,4 +15,3 @@ public interface BaseRepository<T> {
 
     boolean deleteById(String id);
 }
-

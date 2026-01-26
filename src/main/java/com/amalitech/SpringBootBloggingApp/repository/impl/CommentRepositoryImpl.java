@@ -3,6 +3,8 @@ package com.amalitech.SpringBootBloggingApp.repository.impl;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 import com.amalitech.SpringBootBloggingApp.repository.CommentRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,26 +20,37 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public Comment save(Comment entity) {
-        return null;
+        return mongoTemplate.save(entity, "comments");
     }
 
     @Override
     public Optional<Comment> findById(String id) {
-        return Optional.empty();
+        var comment = mongoTemplate.findById(id, Comment.class, "comments");
+        return Optional.ofNullable(comment);
     }
 
     @Override
     public List<Comment> findAll() {
-        return List.of();
+        return mongoTemplate.findAll(Comment.class, "comments");
     }
 
     @Override
     public boolean update(Comment entity) {
-        return false;
+        var query = new Query(Criteria.where("id").is(entity.getId()));
+        var update = new org.springframework.data.mongodb.core.query.Update()
+                .set("content", entity.getContent());
+        return mongoTemplate.updateFirst(query, update, Comment.class, "comments").wasAcknowledged();
     }
 
     @Override
     public boolean deleteById(String id) {
-        return false;
+        var query = new Query(Criteria.where("id").is(id));
+        return mongoTemplate.remove(query, Comment.class, "comments").getDeletedCount() > 0;
+    }
+
+    @Override
+    public List<Comment> findByPostId(String postId) {
+        var query = new Query(Criteria.where("postId").is(postId));
+        return mongoTemplate.find(query, Comment.class, "comments");
     }
 }

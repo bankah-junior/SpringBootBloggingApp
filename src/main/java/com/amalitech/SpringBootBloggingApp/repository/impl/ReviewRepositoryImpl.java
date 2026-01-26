@@ -3,6 +3,8 @@ package com.amalitech.SpringBootBloggingApp.repository.impl;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.repository.ReviewRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,26 +20,54 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public Review save(Review entity) {
-        return null;
+        return mongoTemplate.save(entity, "reviews");
     }
 
     @Override
     public Optional<Review> findById(String id) {
-        return Optional.empty();
+        var review = mongoTemplate.findById(id, Review.class, "reviews");
+        return Optional.ofNullable(review);
     }
 
     @Override
     public List<Review> findAll() {
-        return List.of();
+        return mongoTemplate.findAll(Review.class, "reviews");
     }
 
     @Override
     public boolean update(Review entity) {
-        return false;
+        var query = new Query(Criteria.where("id").is(entity.getId()));
+        var update = new org.springframework.data.mongodb.core.query.Update()
+                .set("postId", entity.getPostId())
+                .set("userId", entity.getUserId())
+                .set("rating", entity.getRating())
+                .set("feedback", entity.getFeedback());
+        return mongoTemplate.updateFirst(query, update, Review.class, "reviews").wasAcknowledged();
     }
 
     @Override
     public boolean deleteById(String id) {
-        return false;
+        var query = new Query(Criteria.where("id").is(id));
+        return mongoTemplate.remove(query, Review.class, "reviews").getDeletedCount() > 0;
+    }
+
+    @Override
+    public List<Review> findByPostId(String postId) {
+        var query = new Query(Criteria.where("postId").is(postId));
+        return mongoTemplate.find(query, Review.class, "reviews");
+    }
+
+    @Override
+    public double calculateAverageRating(String postId) {
+        List<Review> reviews = findByPostId(postId);
+        if (reviews.isEmpty()) {
+            return 0.0;
+        }
+
+        int total = reviews.stream()
+                .mapToInt(Review::getRating)
+                .sum();
+
+        return (double) total / reviews.size();
     }
 }
