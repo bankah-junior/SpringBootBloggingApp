@@ -1,8 +1,11 @@
 package com.amalitech.SpringBootBloggingApp.repository.impl;
 
+import com.amalitech.SpringBootBloggingApp.model.entity.PostTag;
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.repository.TagRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,26 +21,55 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public Tag save(Tag entity) {
-        return null;
+        return mongoTemplate.save(entity, "tags");
     }
 
     @Override
     public Optional<Tag> findById(String id) {
-        return Optional.empty();
+        var tag = mongoTemplate.findById(id, Tag.class, "tags");
+        return Optional.ofNullable(tag);
     }
 
     @Override
     public List<Tag> findAll() {
-        return List.of();
+        return mongoTemplate.findAll(Tag.class, "tags");
     }
 
     @Override
     public boolean update(Tag entity) {
-        return false;
+        var query = new Query(Criteria.where("id").is(entity.getId()));
+        var update = new org.springframework.data.mongodb.core.query.Update()
+                .set("name", entity.getName());
+        return mongoTemplate.updateFirst(query, update, Tag.class, "tags").wasAcknowledged();
     }
 
     @Override
     public boolean deleteById(String id) {
-        return false;
+        var query = new Query(Criteria.where("id").is(id));
+        return mongoTemplate.remove(query, Tag.class, "tags").getDeletedCount() > 0;
+    }
+
+    @Override
+    public Optional<Tag> findByName(String name) {
+        var query = new Query(Criteria.where("name").is(name));
+        return mongoTemplate.find(query, Tag.class, "tags").stream().findFirst();
+    }
+
+    @Override
+    public void assignTagToPost(String postId, String tagId) {
+        PostTag postTag = new PostTag(postId, tagId);
+        mongoTemplate.save(postTag, "post_tags");
+    }
+
+    @Override
+    public List<Tag> findTagsByPostId(String postId) {
+        var query = new Query(Criteria.where("postId").is(postId));
+        return mongoTemplate.find(query, Tag.class, "post_tags");
+    }
+
+    @Override
+    public void unassignAllTagsFromPost(String postId) {
+        var query = new Query(Criteria.where("postId").is(postId));
+        mongoTemplate.remove(query, "post_tags");
     }
 }
