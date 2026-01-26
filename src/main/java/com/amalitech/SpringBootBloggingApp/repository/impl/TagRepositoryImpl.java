@@ -2,11 +2,20 @@ package com.amalitech.SpringBootBloggingApp.repository.impl;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.repository.TagRepository;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class TagRepositoryImpl implements TagRepository {
+    private final MongoTemplate mongoTemplate;
+
+    public TagRepositoryImpl(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
     @Override
     public Tag save(Tag entity) {
         return null;

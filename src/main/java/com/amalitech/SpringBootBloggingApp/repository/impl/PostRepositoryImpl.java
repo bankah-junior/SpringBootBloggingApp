@@ -2,11 +2,20 @@ package com.amalitech.SpringBootBloggingApp.repository.impl;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.repository.PostRepository;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class PostRepositoryImpl implements PostRepository {
+    private final MongoTemplate mongoTemplate;
+
+    public PostRepositoryImpl(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
     @Override
     public Post save(Post entity) {
         return null;
