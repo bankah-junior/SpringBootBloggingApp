@@ -9,6 +9,7 @@ import com.amalitech.SpringBootBloggingApp.service.CommentService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -38,5 +39,21 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<Comment> getByUser(String userId) {
         return commentRepository.findByUserId(userId);
+    }
+
+    @Override
+    public boolean update(Comment comment) {
+        return commentRepository.update(comment);
+    }
+
+    @Override
+    public List<Comment> getAll() {
+        return commentRepository.findAll();
+    }
+
+     @Override
+    public Comment findById(String commentId) {
+         Optional<Comment> comment = commentRepository.findById(commentId);
+        return comment.orElse(null);
     }
 }
