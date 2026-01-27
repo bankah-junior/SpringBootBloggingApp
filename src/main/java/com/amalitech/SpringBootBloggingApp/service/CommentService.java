@@ -13,4 +13,10 @@ public interface CommentService {
     List<Comment> getByPost(String postId);
 
     List<Comment> getByUser(String userId);
+
+    boolean update(Comment comment);
+
+    List<Comment> getAll();
+
+     Comment findById(String commentId);
 }
