@@ -68,8 +68,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean updateUserDetails(User user) {
-        var query = new Query(Criteria.where("id").is(user.getId()));
+    public boolean updateUserDetails(String userId, User user) {
+        var query = new Query(Criteria.where("id").is(userId));
         var update = new org.springframework.data.mongodb.core.query.Update()
                 .set("username", user.getUsername())
                 .set("email", user.getEmail());

@@ -163,16 +163,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updateUserDetails(UpdateUserDetailRequest user) {
+    public boolean updateUserDetails(String userId, UpdateUserDetailRequest user) {
         User updateUser = new User(
-                null,
+                userId,
                 user.getUsername(),
                 user.getEmail(),
                 null,
                 null,
                 System.currentTimeMillis()
         );
-        boolean updated = userRepository.update(updateUser);
+        boolean updated = userRepository.updateUserDetails(userId, updateUser);
         if (updated) {
             userCache.put(updateUser.getId(), updateUser);
         }
