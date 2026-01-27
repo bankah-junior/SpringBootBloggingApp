@@ -10,7 +10,11 @@ public interface ReviewService {
 
     boolean delete(String reviewId);
 
+    boolean update(Review review);
+
     List<Review> getByPost(String postId);
 
     double getAverageRatingForPost(String postId);
+
+    List<Review> getAll();
 }

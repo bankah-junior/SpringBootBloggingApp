@@ -31,6 +31,11 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public boolean update(Review review) {
+        return reviewRepository.update(review);
+    }
+
+    @Override
     public List<Review> getByPost(String postId) {
         return reviewRepository.findByPostId(postId);
     }
@@ -38,5 +43,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public double getAverageRatingForPost(String postId) {
         return reviewRepository.calculateAverageRating(postId);
+    }
+
+    @Override
+    public List<Review> getAll() {
+        return reviewRepository.findAll();
     }
 }
