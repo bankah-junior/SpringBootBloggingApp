@@ -25,7 +25,7 @@ public interface UserService {
 
     List<UserResponse> getAll();
 
-    boolean updateUserDetails(UpdateUserDetailRequest user);
+    boolean updateUserDetails(String userId, UpdateUserDetailRequest user);
 
     boolean changePassword(String userId, String oldPassword, String newPassword);
 
