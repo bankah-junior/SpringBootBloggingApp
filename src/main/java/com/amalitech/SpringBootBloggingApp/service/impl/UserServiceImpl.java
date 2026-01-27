@@ -11,6 +11,8 @@ import com.amalitech.SpringBootBloggingApp.repository.impl.UserRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.UserService;
 
 import com.amalitech.SpringBootBloggingApp.util.JwtUtil;
+import com.amalitech.SpringBootBloggingApp.util.ValidationUtil;
+import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse create(RegisterRequest user) {
+        if (!ValidationUtil.isUsernameValid(user.getUsername())) {
+            throw new UserInputsException("Username is not valid");
+        }
+        if (!ValidationUtil.isEmailValid(user.getEmail())) {
+            throw new UserInputsException("Email is not valid");
+        }
+        if (!ValidationUtil.isPasswordValid(user.getPassword())) {
+            throw new UserInputsException("Password is not valid");
+        }
         User registerUser = new User(
                 null,
                 user.getUsername(),
@@ -38,9 +49,6 @@ public class UserServiceImpl implements UserService {
                 System.currentTimeMillis(),
                 null
         );
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return null;
-        }
         User saved = userRepository.save(registerUser);
         if (saved != null) {
             userCache.put(saved.getId(), saved);
@@ -60,11 +68,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse login(LoginRequest user) {
         if (userRepository.findByEmail(user.getEmail()).isEmpty()){
-            return null;
+            throw new UserInputsException("Email not found");
         } else {
             User loggedIn = userRepository.findByEmail(user.getEmail()).get();
             if (!verifyPassword(user.getPassword(), loggedIn.getPasswordHash())) {
-                return null;
+                throw new UserInputsException("Password is not valid");
             }
             String token = JwtUtil.generateToken(loggedIn.getId(), loggedIn.getEmail());
             return new UserResponse(
@@ -80,6 +88,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse update(UpdateUserRequest user) {
+        if (!ValidationUtil.isUsernameValid(user.getUsername())) {
+            throw new UserInputsException("Username is not valid");
+        }
+        if (!ValidationUtil.isEmailValid(user.getEmail())) {
+            throw new UserInputsException("Email is not valid");
+        }
+        if (!ValidationUtil.isPasswordValid(user.getPassword())) {
+            throw new UserInputsException("Password is not valid");
+        }
         User updateUser = new User(
                 null,
                 user.getUsername(),
@@ -105,6 +122,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean delete(String userId) {
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new UserInputsException("User not found");
+        }
         boolean deleted = userRepository.deleteById(userId);
         if (deleted) {
             userCache.remove(userId);
@@ -114,9 +134,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getById(String userId) {
-        User foundUser = userRepository.findById(userId).orElse(null);
+        User foundUser = userCache.get(userId);
         if (foundUser == null) {
-            return null;
+            foundUser = userRepository.findById(userId).orElse(null);
+            if (foundUser == null) {
+                throw new UserInputsException("User not found");
+            }
+            userCache.put(foundUser.getId(), foundUser);
         }
         String token = JwtUtil.generateToken(foundUser.getId(), foundUser.getEmail());
         return new UserResponse(
@@ -131,9 +155,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getByEmail(String email) {
-        User foundUser = userRepository.findByEmail(email).orElse(null);
+        User foundUser = userCache.get(email);
         if (foundUser == null) {
-            return null;
+            foundUser = userRepository.findByEmail(email).orElse(null);
+            if (foundUser == null) {
+                throw new UserInputsException("User not found");
+            }
+            userCache.put(foundUser.getEmail(), foundUser);
         }
         String token = JwtUtil.generateToken(foundUser.getId(), foundUser.getEmail());
         return new UserResponse(
@@ -164,6 +192,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean updateUserDetails(String userId, UpdateUserDetailRequest user) {
+        if (!ValidationUtil.isValidObjectId(userId)) {
+            throw new UserInputsException("User ID is not valid");
+        }
+        if (!ValidationUtil.isUsernameValid(user.getUsername())) {
+            throw new UserInputsException("Username is not valid");
+        }
+        if (!ValidationUtil.isEmailValid(user.getEmail())) {
+            throw new UserInputsException("Email is not valid");
+        }
         User updateUser = new User(
                 userId,
                 user.getUsername(),
@@ -181,9 +218,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean changePassword(String userId, String oldPassword, String newPassword) {
-        User user = userRepository.findById(userId).orElse(null);
+        if (!ValidationUtil.isValidObjectId(userId)) {
+            throw new UserInputsException("User ID is not valid");
+        }
+        User user = userCache.get(userId);
+        if (user == null) {
+            user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                throw new UserInputsException("User not found");
+            }
+            userCache.put(user.getId(), user);
+        }
         if (user == null || !verifyPassword(oldPassword, user.getPasswordHash())) {
-            return false;
+            throw new UserInputsException("Old password is not valid");
         }
         user.setPasswordHash(newPassword);
         boolean updated = userRepository.update(user);
@@ -195,9 +242,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getByUsername(String username) {
+        if (!ValidationUtil.isUsernameValid(username)) {
+            throw new UserInputsException("Username is not valid");
+        }
         User foundUser = userRepository.findByUsername(username).orElse(null);
         if (foundUser == null) {
-            return null;
+            throw new UserInputsException("User not found");
         }
         String token = JwtUtil.generateToken(foundUser.getId(), foundUser.getEmail());
         return new UserResponse(

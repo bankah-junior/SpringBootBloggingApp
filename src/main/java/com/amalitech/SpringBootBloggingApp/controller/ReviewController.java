@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.controller;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.service.impl.ReviewServiceImpl;
+import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,17 @@ public class ReviewController {
     @PostMapping("/create")
     @Operation(summary = "Create a new review", description = "Creates a new review for a post")
     @Tag(name = "Review")
-    public ResponseEntity<Review> create(@RequestBody Review review) {
-        Review createdReview = reviewServiceImpl.create(review);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdReview);
+    public ResponseEntity<?> create(@RequestBody Review review) {
+        try {
+            Review createdReview = reviewServiceImpl.create(review);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(createdReview);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     /**
@@ -42,10 +49,16 @@ public class ReviewController {
     @Operation(summary = "Delete a review by ID", description = "Deletes a review by its ID")
     @Tag(name = "Review")
     public ResponseEntity<Boolean> delete(@PathVariable String reviewId) {
-        boolean isDeleted = reviewServiceImpl.delete(reviewId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(isDeleted);
+        try {
+            boolean isDeleted = reviewServiceImpl.delete(reviewId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(isDeleted);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(false);
+        }
     }
 
      /**
@@ -57,10 +70,16 @@ public class ReviewController {
     @Operation(summary = "Update a review", description = "Updates a review")
     @Tag(name = "Review")
     public ResponseEntity<Boolean> update(@RequestBody Review review) {
-        boolean isUpdated = reviewServiceImpl.update(review);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(isUpdated);
+        try {
+            boolean isUpdated = reviewServiceImpl.update(review);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(isUpdated);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(false);
+        }
     }
 
      /**
@@ -70,11 +89,17 @@ public class ReviewController {
     @GetMapping
     @Operation(summary = "Get all reviews", description = "Retrieves a list of all reviews")
     @Tag(name = "Review")
-    public ResponseEntity<List<Review>> getAll() {
-        List<Review> reviews = reviewServiceImpl.getAll();
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(reviews);
+    public ResponseEntity<?> getAll() {
+        try {
+            List<Review> reviews = reviewServiceImpl.getAll();
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(reviews);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     /**
@@ -85,11 +110,17 @@ public class ReviewController {
      @GetMapping("/post/{postId}")
     @Operation(summary = "Get reviews by post ID", description = "Retrieves a list of reviews for a specific post")
     @Tag(name = "Review")
-    public ResponseEntity<List<Review>> getByPost(@PathVariable String postId) {
-        List<Review> reviews = reviewServiceImpl.getByPost(postId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(reviews);
+    public ResponseEntity<?> getByPost(@PathVariable String postId) {
+        try {
+            List<Review> reviews = reviewServiceImpl.getByPost(postId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(reviews);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
      /**
@@ -100,10 +131,16 @@ public class ReviewController {
      @GetMapping("/post/{postId}/average-rating")
     @Operation(summary = "Get average rating for a post", description = "Retrieves the average rating for a specific post")
     @Tag(name = "Review")
-    public ResponseEntity<Double> getAverageRatingForPost(@PathVariable String postId) {
-        double averageRating = reviewServiceImpl.getAverageRatingForPost(postId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(averageRating);
+    public ResponseEntity<?> getAverageRatingForPost(@PathVariable String postId) {
+        try {
+            double averageRating = reviewServiceImpl.getAverageRatingForPost(postId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(averageRating);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 }

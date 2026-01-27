@@ -24,11 +24,17 @@ public class TagController {
     @GetMapping("/all")
     @Operation(summary = "Get all tags", description = "Retrieves a list of all tags")
     @Tag(name = "Tag")
-    public ResponseEntity<List<com.amalitech.SpringBootBloggingApp.model.entity.Tag>> getAllTags() {
-        List<com.amalitech.SpringBootBloggingApp.model.entity.Tag> tags = tagServiceImpl.getAll();
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(tags);
+    public ResponseEntity<?> getAllTags() {
+        try {
+            List<com.amalitech.SpringBootBloggingApp.model.entity.Tag> tags = tagServiceImpl.getAll();
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(tags);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
     }
 
     /**
@@ -39,11 +45,17 @@ public class TagController {
      @PostMapping("/create")
      @Operation(summary = "Create a new tag", description = "Creates a new tag")
      @Tag(name = "Tag")
-     public ResponseEntity<com.amalitech.SpringBootBloggingApp.model.entity.Tag> createTag(@RequestBody com.amalitech.SpringBootBloggingApp.model.entity.Tag tag) {
-        com.amalitech.SpringBootBloggingApp.model.entity.Tag createdTag = tagServiceImpl.create(tag);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdTag);
+     public ResponseEntity<?> createTag(@RequestBody com.amalitech.SpringBootBloggingApp.model.entity.Tag tag) {
+        try {
+            com.amalitech.SpringBootBloggingApp.model.entity.Tag createdTag = tagServiceImpl.create(tag);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(createdTag);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
      }
 
     /**
@@ -55,11 +67,17 @@ public class TagController {
      @PostMapping("/{postId}/assign/{tagId}")
      @Operation(summary = "Assign a tag to a post", description = "Assigns a tag to a post")
      @Tag(name = "Tag")
-     public ResponseEntity<Void> assignTagToPost(@PathVariable String postId, @PathVariable String tagId) {
-        tagServiceImpl.assignTagToPost(postId, tagId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .build();
+     public ResponseEntity<?> assignTagToPost(@PathVariable String postId, @PathVariable String tagId) {
+        try {
+            tagServiceImpl.assignTagToPost(postId, tagId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .build();
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
      }
 
     /**
@@ -70,11 +88,17 @@ public class TagController {
     @GetMapping("/{postId}/assigned")
     @Operation(summary = "Get all tags assigned to a post", description = "Retrieves a list of all tags assigned to a post")
     @Tag(name = "Tag")
-    public ResponseEntity<List<com.amalitech.SpringBootBloggingApp.model.entity.Tag>> getAllTagsAssignedToPost(@PathVariable String postId) {
-        List<com.amalitech.SpringBootBloggingApp.model.entity.Tag> tags = tagServiceImpl.getTagsByPost(postId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(tags);
+    public ResponseEntity<?> getAllTagsAssignedToPost(@PathVariable String postId) {
+        try {
+            List<com.amalitech.SpringBootBloggingApp.model.entity.Tag> tags = tagServiceImpl.getTagsByPost(postId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(tags);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
     }
 
     /**
@@ -85,11 +109,17 @@ public class TagController {
      @PostMapping("/{postId}/unassign/{tagId}")
      @Operation(summary = "Unassign a tag from a post", description = "Unassigns a tag from a post")
      @Tag(name = "Tag")
-     public ResponseEntity<Void> unassignAllTagsFromPost(@PathVariable String postId) {
-        tagServiceImpl.unassignAllTagsFromPost(postId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .build();
+     public ResponseEntity<?> unassignAllTagsFromPost(@PathVariable String postId) {
+        try {
+            tagServiceImpl.unassignAllTagsFromPost(postId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .build();
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
      }
 
     /**
@@ -100,10 +130,16 @@ public class TagController {
      @GetMapping("/name/{name}")
      @Operation(summary = "Get tag by name", description = "Retrieves a tag by its name")
      @Tag(name = "Tag")
-     public ResponseEntity<com.amalitech.SpringBootBloggingApp.model.entity.Tag> getTagByName(@PathVariable String name) {
-        com.amalitech.SpringBootBloggingApp.model.entity.Tag tag = tagServiceImpl.getByName(name);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(tag);
+     public ResponseEntity<?> getTagByName(@PathVariable String name) {
+        try {
+            com.amalitech.SpringBootBloggingApp.model.entity.Tag tag = tagServiceImpl.getByName(name);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(tag);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
      }
 }
