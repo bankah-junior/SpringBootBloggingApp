@@ -6,6 +6,8 @@ import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.TagRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.TagService;
 
+import com.amalitech.SpringBootBloggingApp.util.ValidationUtil;
+import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,11 +24,17 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Tag create(Tag tag) {
+        if (!ValidationUtil.isValidTagName(tag.getName())) {
+            throw new UserInputsException("Tag name is not valid");
+        }
         return tagRepository.save(tag);
     }
 
     @Override
     public Tag getByName(String name) {
+        if (!ValidationUtil.isValidTagName(name)) {
+            throw new UserInputsException("Tag name is not valid");
+        }
         return tagRepository.findByName(name).orElse(null);
     }
 
@@ -37,16 +45,28 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public void assignTagToPost(String postId, String tagId) {
+        if (!ValidationUtil.isValidObjectId(postId)) {
+            throw new UserInputsException("Post ID is not valid");
+        }
+        if (!ValidationUtil.isValidObjectId(tagId)) {
+            throw new UserInputsException("Tag ID is not valid");
+        }
         tagRepository.assignTagToPost(postId, tagId);
     }
 
     @Override
     public List<Tag> getTagsByPost(String postId) {
+        if (!ValidationUtil.isValidObjectId(postId)) {
+            throw new UserInputsException("Post ID is not valid");
+        }
         return tagRepository.findTagsByPostId(postId);
     }
 
     @Override
     public void unassignAllTagsFromPost(String postId) {
+        if (!ValidationUtil.isValidObjectId(postId)) {
+            throw new UserInputsException("Post ID is not valid");
+        }
         tagRepository.unassignAllTagsFromPost(postId);
     }
 }

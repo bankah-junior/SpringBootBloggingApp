@@ -6,6 +6,8 @@ import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.PostRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.PostService;
 
+import com.amalitech.SpringBootBloggingApp.util.ValidationUtil;
+import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +24,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post create(Post post) {
-       return postRepository.save(post);
+        if (!ValidationUtil.isValidTitle(post.getTitle())) {
+            throw new UserInputsException("Invalid title");
+        }
+        if (!ValidationUtil.isValidContent(post.getContent())) {
+            throw new UserInputsException("Invalid content");
+        }
+        return postRepository.save(post);
     }
 
     @Override
@@ -36,11 +44,17 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public boolean delete(String postId) {
+        if (!ValidationUtil.isValidObjectId(postId)) {
+            throw new UserInputsException("Invalid post ID");
+        }
         return postRepository.deleteById(postId);
     }
 
     @Override
     public Post getById(String postId) {
+        if (!ValidationUtil.isValidObjectId(postId)) {
+            throw new UserInputsException("Invalid post ID");
+        }
         return postRepository.findById(postId).orElse(null);
     }
 
@@ -56,6 +70,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<Post> getByAuthor(String authorId) {
+        if (!ValidationUtil.isValidObjectId(authorId)) {
+            throw new UserInputsException("Invalid author ID");
+        }
         return postRepository.findByAuthorId(authorId);
     }
 

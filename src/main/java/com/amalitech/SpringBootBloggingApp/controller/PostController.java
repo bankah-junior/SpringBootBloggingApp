@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.controller;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.service.impl.PostServiceImpl;
+import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,17 @@ public class PostController {
     @PostMapping("/create")
     @Operation(summary = "Create a new post", description = "Creates a new post")
     @Tag(name = "Post")
-    public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        Post createdPost = postServiceImpl.create(post);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdPost);
+    public ResponseEntity<?> createPost(@RequestBody Post post) {
+        try {
+            Post createdPost = postServiceImpl.create(post);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(createdPost);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     /**
@@ -88,42 +95,57 @@ public class PostController {
      /**
      * Delete a post by ID
      * @param id the ID of the post to delete
-     * @return void
+     * @return ResponseEntity with no content if successful, or bad request with error message if not
      */
       @DeleteMapping("/delete/{id}")
     @Operation(summary = "Delete a post by ID", description = "Deletes a post by ID")
     @Tag(name = "Post")
-     public ResponseEntity<Void> deletePostById(@PathVariable String id) {
-        postServiceImpl.delete(id);
-        return ResponseEntity.noContent().build();
+     public ResponseEntity<?> deletePostById(@PathVariable String id) {
+        try {
+            postServiceImpl.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     /**
      * Get all posts
-     * @return all posts
+     * @return ResponseEntity with list of posts if successful, or bad request with error message if not
      */
      @GetMapping("/all")
     @Operation(summary = "Get all posts", description = "Retrieves all posts")
     @Tag(name = "Post")
-    public ResponseEntity<List<Post>> getAllPosts() {
-        List<Post> posts = postServiceImpl.getAll();
-        return ResponseEntity.ok(posts);
+    public ResponseEntity<?> getAllPosts() {
+        try {
+            List<Post> posts = postServiceImpl.getAll();
+            return ResponseEntity.ok(posts);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     /**
      * Get a post by ID
      * @param id the ID of the post to retrieve
-     * @return the post with the specified ID
+     * @return ResponseEntity with post if successful, or bad request with error message if not
      */
      @GetMapping("/{id}")
     @Operation(summary = "Get a post by ID", description = "Retrieves a post by ID")
     @Tag(name = "Post")
-    public ResponseEntity<Post> getPostById(@PathVariable String id) {
-        Post post = postServiceImpl.getById(id);
-        return ResponseEntity.ok(post);
+    public ResponseEntity<?> getPostById(@PathVariable String id) {
+        try {
+            Post post = postServiceImpl.getById(id);
+            return ResponseEntity.ok(post);
+        } catch (UserInputsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
-    /**
-     *
-     */
 }
