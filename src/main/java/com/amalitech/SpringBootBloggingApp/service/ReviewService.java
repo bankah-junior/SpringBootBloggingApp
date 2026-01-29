@@ -13,8 +13,13 @@ public interface ReviewService {
     boolean update(Review review);
 
     List<Review> getByPost(String postId);
+    List<Review> getByPost(com.amalitech.SpringBootBloggingApp.model.entity.Post post);
+    
+    List<Review> getByUser(String userId);
+    List<Review> getByUser(com.amalitech.SpringBootBloggingApp.model.entity.User user);
 
     double getAverageRatingForPost(String postId);
+    double getAverageRatingForPost(com.amalitech.SpringBootBloggingApp.model.entity.Post post);
 
     List<Review> getAll();
 }

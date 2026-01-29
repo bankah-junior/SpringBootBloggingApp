@@ -1,53 +1,56 @@
 package com.amalitech.SpringBootBloggingApp.model.entity;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document
+@Document(collection = "posts")
 public class Post {
 
     @Id
     private String id;
 
+    @DBRef
     @Indexed
-    private String authorId;
+    @NotNull
+    private User author;
 
+    @NotBlank
+    @Size(min = 1, max = 200)
     @Indexed
     private String title;
 
+    @NotBlank
+    @Size(max = 10000)
     private String content;
 
     @Indexed
     private boolean published;
 
+    @Indexed(direction = IndexDirection.DESCENDING)
     private Long createdAt;
 
+    @Indexed(direction = IndexDirection.DESCENDING)
     private Long updatedAt;
 
+    @DBRef
     private List<Review> reviews;
 
     public Post() {}
-
-    public Post(String id, String authorId, String title, String content,
-                boolean published, Long createdAt, Long updatedAt) {
-        this.id = id;
-        this.authorId = authorId;
-        this.title = title;
-        this.content = content;
-        this.published = published;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 
     // Getters & Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getAuthorId() { return authorId; }
-    public void setAuthorId(String authorId) { this.authorId = authorId; }
+    public User getAuthor() { return author; }
+    public void setAuthor(User author) { this.author = author; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -67,8 +70,4 @@ public class Post {
     public List<Review> getReviews() { return reviews; }
     public void setReviews(List<Review> reviews) { this.reviews = reviews; }
 
-    public String getPostId() { return id; }
-    public void setPostId(String postId) {
-        this.id = postId;
-    }
 }

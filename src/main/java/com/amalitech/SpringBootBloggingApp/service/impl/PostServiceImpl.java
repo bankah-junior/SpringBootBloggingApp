@@ -106,6 +106,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<Post> getByAuthor(com.amalitech.SpringBootBloggingApp.model.entity.User author) {
+        return postRepository.findByAuthor(author);
+    }
+
+    @Override
+    public List<Post> getByPublished(boolean published) {
+        return postRepository.findByPublished(published);
+    }
+
+    @Override
     public List<Post> getAllSorted(String sortBy, boolean ascending) {
         return switch (sortBy.toLowerCase()) {
             case "date" -> sortByDate(getAll(), ascending);

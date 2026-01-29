@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.CommentRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.CommentService;
@@ -48,11 +49,21 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public List<Comment> getByPost(Post post) {
+        return List.of();
+    }
+
+    @Override
     public List<Comment> getByUser(String userId) {
         if(!ValidationUtil.isValidObjectId(userId)) {
             throw new UserInputsException("Invalid user ID");
         }
         return commentRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<Comment> getByUser(User user) {
+        return List.of();
     }
 
     @Override

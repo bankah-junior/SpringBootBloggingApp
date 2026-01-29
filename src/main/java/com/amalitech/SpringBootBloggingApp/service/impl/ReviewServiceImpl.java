@@ -1,6 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.ReviewRepositoryImpl;
@@ -24,12 +25,6 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Review create(Review review) {
-        if (!ValidationUtil.isValidObjectId(review.getUserId())) {
-            throw new UserInputsException("Invalid user ID");
-        }
-        if (!ValidationUtil.isValidObjectId(review.getPostId())) {
-            throw new UserInputsException("Invalid post ID");
-        }
         if (!ValidationUtil.isValidRating(review.getRating())) {
             throw new UserInputsException("Invalid rating");
         }
@@ -64,11 +59,31 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public List<Review> getByPost(Post post) {
+        return List.of();
+    }
+
+    @Override
+    public List<Review> getByUser(String userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Review> getByUser(User user) {
+        return List.of();
+    }
+
+    @Override
     public double getAverageRatingForPost(String postId) {
         if (!ValidationUtil.isValidObjectId(postId)) {
             throw new UserInputsException("Invalid post ID");
         }
         return reviewRepository.calculateAverageRating(postId);
+    }
+
+    @Override
+    public double getAverageRatingForPost(Post post) {
+        return 0;
     }
 
     @Override

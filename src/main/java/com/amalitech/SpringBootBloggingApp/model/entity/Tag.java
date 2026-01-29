@@ -1,5 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.model.entity;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,7 +12,9 @@ public class Tag {
     @Id
     private String id;
 
-    @Indexed
+    @NotBlank
+    @Size(min = 1, max = 50)
+    @Indexed(unique = true)
     private String name;
 
     public Tag() {}

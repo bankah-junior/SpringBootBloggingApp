@@ -19,8 +19,12 @@ public interface PostService {
     List<Post> searchByTitle(String keyword);
 
     List<Post> getByAuthor(String authorId);
+    
+    List<Post> getByAuthor(com.amalitech.SpringBootBloggingApp.model.entity.User author);
 
     List<Post> searchByTag(String tagName);
+    
+    List<Post> getByPublished(boolean published);
 
     List<Post> sortByDate(List<Post> posts, boolean ascending);
 

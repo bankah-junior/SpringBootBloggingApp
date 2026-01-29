@@ -40,8 +40,9 @@ public class PostRepositoryImpl implements PostRepository {
         var update = new org.springframework.data.mongodb.core.query.Update()
                 .set("title", entity.getTitle())
                 .set("content", entity.getContent())
-                .set("authorId", entity.getAuthorId())
-                .set("isPublished", entity.isPublished());
+                .set("author", entity.getAuthor())
+                .set("published", entity.isPublished())
+                .set("updatedAt", entity.getUpdatedAt());
         return mongoTemplate.updateFirst(query, update, Post.class, "posts").wasAcknowledged();
     }
 
@@ -65,7 +66,18 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public List<Post> findByTagName(String tagName) {
-        var query = new Query(Criteria.where("tags").is(tagName));
+        return List.of();
+    }
+
+    @Override
+    public List<Post> findByAuthor(com.amalitech.SpringBootBloggingApp.model.entity.User author) {
+        var query = new Query(Criteria.where("author.$id").is(author.getId()));
+        return mongoTemplate.find(query, Post.class, "posts");
+    }
+
+    @Override
+    public List<Post> findByPublished(boolean published) {
+        var query = new Query(Criteria.where("published").is(published));
         return mongoTemplate.find(query, Post.class, "posts");
     }
 }

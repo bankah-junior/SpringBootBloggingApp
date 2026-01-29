@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
                 null,
                 user.getUsername(),
                 user.getEmail(),
-                user.getPassword(),
+                hashPassword(user.getPassword()),
                 System.currentTimeMillis(),
                 null
         );
@@ -98,12 +98,13 @@ public class UserServiceImpl implements UserService {
         if (!ValidationUtil.isPasswordValid(user.getPassword())) {
             throw new UserInputsException("Password is not valid");
         }
+        User foundUser = userRepository.findByEmail(user.getEmail()).orElse(null);
         User updateUser = new User(
-                null,
+                foundUser.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPassword(),
-                null,
+                hashPassword(user.getPassword()),
+                foundUser.getCreatedAt(),
                 System.currentTimeMillis()
         );
         if (userRepository.update(updateUser)) {
