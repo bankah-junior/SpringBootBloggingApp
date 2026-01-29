@@ -16,6 +16,15 @@ public class UpdateUserRequest {
     @Size(min = 8, max = 8, message = "Password must be exactly 8 characters")
     private String password;
 
+    public UpdateUserRequest() {
+    }
+
+    public UpdateUserRequest(String email, String username, String password) {
+        this.email = email;
+        this.username = username;
+        this.password = password;
+    }
+
     public String getEmail() {
         return email;
     }

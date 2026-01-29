@@ -52,7 +52,7 @@ Ensure the following are installed and running:
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/SpringBootBloggingApp.git
+git clone https://github.com/bankah-junior/SpringBootBloggingApp.git
 cd SpringBootBloggingApp
 ```
 
