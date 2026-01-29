@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.amalitech.SpringBootBloggingApp.util.PasswordUtil.hashPassword;
 import static com.amalitech.SpringBootBloggingApp.util.PasswordUtil.verifyPassword;
 
 @Service
@@ -232,7 +233,7 @@ public class UserServiceImpl implements UserService {
         if (user == null || !verifyPassword(oldPassword, user.getPasswordHash())) {
             throw new UserInputsException("Old password is not valid");
         }
-        user.setPasswordHash(newPassword);
+        user.setPasswordHash(hashPassword(newPassword));
         boolean updated = userRepository.update(user);
         if (updated) {
             userCache.put(user.getId(), user);

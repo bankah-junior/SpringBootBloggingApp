@@ -11,6 +11,14 @@ public class UpdateUserDetailRequest {
     @NotBlank(message = "Username is required!")
     private String username;
 
+    public UpdateUserDetailRequest() {
+    }
+
+    public UpdateUserDetailRequest(String email, String username) {
+        this.email = email;
+        this.username = username;
+    }
+
     public String getEmail() {
         return email;
     }
