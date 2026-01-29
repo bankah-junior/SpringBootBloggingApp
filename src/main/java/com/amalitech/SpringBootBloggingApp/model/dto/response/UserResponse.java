@@ -8,7 +8,8 @@ public class UserResponse {
     private Long updatedAt;
     private String token;
 
-    public UserResponse() {}
+    public UserResponse() {
+    }
 
     public UserResponse(String id, String username, String email, Long createdAt, Long updatedAt, String token) {
         this.id = id;
@@ -39,7 +40,27 @@ public class UserResponse {
         return updatedAt;
     }
 
-    public String getToken() {
-        return token;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(Long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

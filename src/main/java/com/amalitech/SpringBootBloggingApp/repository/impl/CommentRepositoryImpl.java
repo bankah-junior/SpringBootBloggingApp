@@ -1,6 +1,8 @@
 package com.amalitech.SpringBootBloggingApp.repository.impl;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
+import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.CommentRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -54,8 +56,18 @@ public class CommentRepositoryImpl implements CommentRepository {
         return mongoTemplate.find(query, Comment.class, "comments");
     }
 
+    @Override
+    public List<Comment> findByPost(Post post) {
+        return List.of();
+    }
+
     public List<Comment> findByUserId(String userId) {
         var query = new Query(Criteria.where("userId").is(userId));
         return mongoTemplate.find(query, Comment.class, "comments");
+    }
+
+    @Override
+    public List<Comment> findByUser(User user) {
+        return List.of();
     }
 }

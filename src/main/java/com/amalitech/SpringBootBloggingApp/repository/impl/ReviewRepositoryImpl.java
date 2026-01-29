@@ -1,6 +1,8 @@
 package com.amalitech.SpringBootBloggingApp.repository.impl;
 
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
+import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.ReviewRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -38,8 +40,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public boolean update(Review entity) {
         var query = new Query(Criteria.where("id").is(entity.getId()));
         var update = new org.springframework.data.mongodb.core.query.Update()
-                .set("postId", entity.getPostId())
-                .set("userId", entity.getUserId())
                 .set("rating", entity.getRating())
                 .set("feedback", entity.getFeedback());
         return mongoTemplate.updateFirst(query, update, Review.class, "reviews").wasAcknowledged();
@@ -58,6 +58,21 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
+    public List<Review> findByPost(Post post) {
+        return List.of();
+    }
+
+    @Override
+    public List<Review> findByUserId(String userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Review> findByUser(User user) {
+        return List.of();
+    }
+
+    @Override
     public double calculateAverageRating(String postId) {
         List<Review> reviews = findByPostId(postId);
         if (reviews.isEmpty()) {
@@ -69,5 +84,10 @@ public class ReviewRepositoryImpl implements ReviewRepository {
                 .sum();
 
         return (double) total / reviews.size();
+    }
+
+    @Override
+    public double calculateAverageRating(Post post) {
+        return 0;
     }
 }

@@ -64,7 +64,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> login(String email, String password) {
-        return Optional.empty();
+        var query = new Query(Criteria.where("email").is(email).and("passwordHash").is(password));
+        return mongoTemplate.find(query, User.class, "users").stream().findFirst();
     }
 
     @Override

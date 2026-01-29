@@ -1,7 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.controller;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
-import com.amalitech.SpringBootBloggingApp.service.impl.CommentServiceImpl;
+import com.amalitech.SpringBootBloggingApp.service.CommentService;
 import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,9 +14,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/comments")
 public class CommentController {
-    private final CommentServiceImpl commentServiceImpl;
-    public CommentController(CommentServiceImpl commentServiceImpl) {
-        this.commentServiceImpl = commentServiceImpl;
+    private final CommentService commentService;
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
     }
 
     /**
@@ -29,7 +29,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<?> create(@RequestBody Comment comment) {
         try {
-            Comment createdComment = commentServiceImpl.create(comment);
+            Comment createdComment = commentService.create(comment);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
         } catch (UserInputsException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -46,7 +46,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<?> findById(@PathVariable String commentId) {
         try {
-            Comment comment = commentServiceImpl.findById(commentId);
+            Comment comment = commentService.findById(commentId);
             if (comment == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
@@ -65,7 +65,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<?> getAll() {
         try {
-            List<Comment> comments = commentServiceImpl.getAll();
+            List<Comment> comments = commentService.getAll();
             return ResponseEntity.status(HttpStatus.OK).body(comments);
         } catch (UserInputsException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -82,7 +82,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<?> findByUserId(@PathVariable String userId) {
         try {
-            List<Comment> comments = commentServiceImpl.getByUser(userId);
+            List<Comment> comments = commentService.getByUser(userId);
             return ResponseEntity.status(HttpStatus.OK).body(comments);
         } catch (UserInputsException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -99,7 +99,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<?> findByPostId(@PathVariable String postId) {
         try {
-            List<Comment> comments = commentServiceImpl.getByPost(postId);
+            List<Comment> comments = commentService.getByPost(postId);
             return ResponseEntity.status(HttpStatus.OK).body(comments);
         } catch (UserInputsException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -116,7 +116,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<?> update(@RequestBody Comment comment) {
         try {
-            boolean updated = commentServiceImpl.update(comment);
+            boolean updated = commentService.update(comment);
             if (!updated) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
@@ -136,7 +136,7 @@ public class CommentController {
     @Tag(name = "Comment")
     public ResponseEntity<Boolean> delete(@PathVariable String commentId) {
         try {
-            boolean deleted = commentServiceImpl.delete(commentId);
+            boolean deleted = commentService.delete(commentId);
             if (!deleted) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
             }

@@ -1,7 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.controller;
 
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
-import com.amalitech.SpringBootBloggingApp.service.impl.ReviewServiceImpl;
+import com.amalitech.SpringBootBloggingApp.service.ReviewService;
 import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,9 +14,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {
-    private final ReviewServiceImpl reviewServiceImpl;
-    public ReviewController(ReviewServiceImpl reviewServiceImpl) {
-        this.reviewServiceImpl = reviewServiceImpl;
+    private final ReviewService reviewService;
+    public ReviewController(ReviewService reviewService) {
+        this.reviewService = reviewService;
     }
 
     /**
@@ -29,7 +29,7 @@ public class ReviewController {
     @Tag(name = "Review")
     public ResponseEntity<?> create(@RequestBody Review review) {
         try {
-            Review createdReview = reviewServiceImpl.create(review);
+            Review createdReview = reviewService.create(review);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(createdReview);
@@ -50,7 +50,7 @@ public class ReviewController {
     @Tag(name = "Review")
     public ResponseEntity<Boolean> delete(@PathVariable String reviewId) {
         try {
-            boolean isDeleted = reviewServiceImpl.delete(reviewId);
+            boolean isDeleted = reviewService.delete(reviewId);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(isDeleted);
@@ -71,7 +71,7 @@ public class ReviewController {
     @Tag(name = "Review")
     public ResponseEntity<Boolean> update(@RequestBody Review review) {
         try {
-            boolean isUpdated = reviewServiceImpl.update(review);
+            boolean isUpdated = reviewService.update(review);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(isUpdated);
@@ -91,7 +91,7 @@ public class ReviewController {
     @Tag(name = "Review")
     public ResponseEntity<?> getAll() {
         try {
-            List<Review> reviews = reviewServiceImpl.getAll();
+            List<Review> reviews = reviewService.getAll();
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(reviews);
@@ -112,7 +112,7 @@ public class ReviewController {
     @Tag(name = "Review")
     public ResponseEntity<?> getByPost(@PathVariable String postId) {
         try {
-            List<Review> reviews = reviewServiceImpl.getByPost(postId);
+            List<Review> reviews = reviewService.getByPost(postId);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(reviews);
@@ -133,7 +133,7 @@ public class ReviewController {
     @Tag(name = "Review")
     public ResponseEntity<?> getAverageRatingForPost(@PathVariable String postId) {
         try {
-            double averageRating = reviewServiceImpl.getAverageRatingForPost(postId);
+            double averageRating = reviewService.getAverageRatingForPost(postId);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(averageRating);
