@@ -14,6 +14,7 @@ type Post {
     published: Boolean!
     author: User
     reviews: [Review]
+    tags: [Tag]
     createdAt: Int
     updatedAt: Int
 }
@@ -40,6 +41,7 @@ type Review {
 type Tag {
     id: ID!
     name: String!
+    posts: [Post]
 }
 
 # ---------------------
@@ -61,6 +63,9 @@ type Mutation {
     createPost(input: PostInput): Post
     addComment(input: CommentInput): Comment
     addReview(input: ReviewInput): Review
+    createTag(input: TagInput): Tag
+    createUser(input: UserInput): User
+    updateUser(input: UserUpdateInput): User
 }
 
 # ---------------------
@@ -83,4 +88,20 @@ input ReviewInput {
     userId: ID!
     rating: Int!
     feedback: String
+}
+
+input TagInput {
+    name: String!
+}
+
+input UserInput {
+    username: String!
+    email: String!
+    password: String!
+}
+
+input UserUpdateInput {
+    id: ID!
+    username: String
+    email: String
 }

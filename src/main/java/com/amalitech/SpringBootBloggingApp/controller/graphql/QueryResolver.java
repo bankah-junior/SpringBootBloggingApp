@@ -6,6 +6,7 @@ import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.service.*;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
@@ -50,5 +51,10 @@ public class QueryResolver {
     @QueryMapping
     public List<Review> reviews() {
         return reviewService.getAll();
+    }
+
+    @QueryMapping
+    public Post postById(@Argument String id) {
+        return postService.getById(id);
     }
 }
