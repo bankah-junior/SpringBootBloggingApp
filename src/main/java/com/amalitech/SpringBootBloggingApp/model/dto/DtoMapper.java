@@ -1,15 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.model.dto;
 
-import com.amalitech.SpringBootBloggingApp.model.dto.response.CommentResponse;
-import com.amalitech.SpringBootBloggingApp.model.dto.response.PostResponse;
-import com.amalitech.SpringBootBloggingApp.model.dto.response.ReviewResponse;
-import com.amalitech.SpringBootBloggingApp.model.dto.response.TagResponse;
-import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
-import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
-import com.amalitech.SpringBootBloggingApp.model.entity.Post;
-import com.amalitech.SpringBootBloggingApp.model.entity.Review;
-import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
-import com.amalitech.SpringBootBloggingApp.model.entity.User;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.*;
+import com.amalitech.SpringBootBloggingApp.model.entity.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,5 +57,14 @@ public final class DtoMapper {
 
     public static List<ReviewResponse> toReviewResponses(List<Review> reviews) {
         return reviews == null ? List.of() : reviews.stream().map(DtoMapper::toReviewResponse).collect(Collectors.toList());
+    }
+
+    public static PostTagResponse toPostTagResponse(PostTag pt) {
+        if (pt == null) return null;
+        return new PostTagResponse(pt.getId(), pt.getPostId(), pt.getTagId());
+    }
+
+    public static List<PostTagResponse> toPostTagResponses(List<PostTag> postTags) {
+        return postTags == null ? List.of() : postTags.stream().map(DtoMapper::toPostTagResponse).collect(Collectors.toList());
     }
 }
