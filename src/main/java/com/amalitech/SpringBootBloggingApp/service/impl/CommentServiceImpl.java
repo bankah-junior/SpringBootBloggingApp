@@ -1,10 +1,13 @@
 package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.CommentRepositoryImpl;
+import com.amalitech.SpringBootBloggingApp.repository.impl.PostRepositoryImpl;
+import com.amalitech.SpringBootBloggingApp.repository.impl.UserRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.CommentService;
 
 import com.amalitech.SpringBootBloggingApp.util.ValidationUtil;
@@ -17,11 +20,29 @@ import java.util.Optional;
 @Service
 public class CommentServiceImpl implements CommentService {
     private final CommentRepositoryImpl commentRepository;
+    private final UserRepositoryImpl userRepository;
+    private final PostRepositoryImpl postRepository;
     private final Cache<String, User> userCache;
 
-    public CommentServiceImpl(CommentRepositoryImpl commentRepository, Cache<String, User> userCache) {
+    public CommentServiceImpl(CommentRepositoryImpl commentRepository, UserRepositoryImpl userRepository, PostRepositoryImpl postRepository, Cache<String, User> userCache) {
         this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
         this.userCache = userCache;
+    }
+
+    @Override
+    public Comment create(CreateCommentRequest request) {
+        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new UserInputsException("User not found"));
+        Post post = postRepository.findById(request.getPostId()).orElseThrow(() -> new UserInputsException("Post not found"));
+        Comment comment = new Comment();
+        comment.setPost(post);
+        comment.setUser(user);
+        comment.setContent(request.getContent());
+        long now = System.currentTimeMillis();
+        comment.setCreatedAt(now);
+        comment.setUpdatedAt(now);
+        return commentRepository.save(comment);
     }
 
     @Override

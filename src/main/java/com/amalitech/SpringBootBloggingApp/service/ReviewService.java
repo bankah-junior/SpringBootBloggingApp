@@ -1,5 +1,6 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateReviewRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 
 import java.util.List;
@@ -7,6 +8,10 @@ import java.util.List;
 public interface ReviewService {
 
     Review create(Review review);
+
+    Review create(CreateReviewRequest request);
+
+    Review getById(String reviewId);
 
     boolean delete(String reviewId);
 

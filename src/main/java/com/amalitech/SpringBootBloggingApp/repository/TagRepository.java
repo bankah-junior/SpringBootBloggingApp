@@ -14,4 +14,6 @@ public interface TagRepository extends BaseRepository<Tag> {
     List<Tag> findTagsByPostId(String postId);
 
     void unassignAllTagsFromPost(String postId);
+
+    void unassignTagFromPost(String postId, String tagId);
 }

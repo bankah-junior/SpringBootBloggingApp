@@ -4,7 +4,7 @@ import com.amalitech.SpringBootBloggingApp.model.dto.request.LoginRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.RegisterRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserDetailRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
-import com.amalitech.SpringBootBloggingApp.service.impl.UserServiceImpl;
+import com.amalitech.SpringBootBloggingApp.service.UserService;
 import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,9 +17,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
-    private final UserServiceImpl userServiceImpl;
-    public UserController(UserServiceImpl userServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     /**
@@ -32,7 +33,7 @@ public class UserController {
     @Tag(name = "User")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            UserResponse userResponse = userServiceImpl.login(loginRequest);
+            UserResponse userResponse = userService.login(loginRequest);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(userResponse);
@@ -53,7 +54,7 @@ public class UserController {
     @Tag(name = "User")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         try {
-            UserResponse userResponse = userServiceImpl.create(registerRequest);
+            UserResponse userResponse = userService.create(registerRequest);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(userResponse);
@@ -74,7 +75,7 @@ public class UserController {
     @Tag(name = "User")
     public ResponseEntity<?> getUserById(@PathVariable String userId) {
         try {
-            UserResponse userResponse = userServiceImpl.getById(userId);
+            UserResponse userResponse = userService.getById(userId);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(userResponse);
@@ -95,7 +96,7 @@ public class UserController {
     @Tag(name = "User")
     public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
         try {
-            UserResponse userResponse = userServiceImpl.getByEmail(email);
+            UserResponse userResponse = userService.getByEmail(email);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(userResponse);
@@ -115,7 +116,7 @@ public class UserController {
     @Tag(name = "User")
     public ResponseEntity<?> getAllUsers() {
         try {
-            List<UserResponse> userResponses = userServiceImpl.getAll();
+            List<UserResponse> userResponses = userService.getAll();
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(userResponses);
@@ -138,13 +139,13 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable String userId,
                                                    @RequestBody UpdateUserDetailRequest updateUserDetailRequest) {
         try {
-            boolean isUpdated = userServiceImpl.updateUserDetails(userId, updateUserDetailRequest);
+            boolean isUpdated = userService.updateUserDetails(userId, updateUserDetailRequest);
             if (!isUpdated) {
                 return ResponseEntity
                         .status(HttpStatus.NOT_FOUND)
                         .body(null);
             }
-            UserResponse updatedUserResponse = userServiceImpl.getById(userId);
+            UserResponse updatedUserResponse = userService.getById(userId);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(updatedUserResponse);
@@ -165,7 +166,7 @@ public class UserController {
     @Tag(name = "User")
     public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
         try {
-            boolean isDeleted = userServiceImpl.delete(userId);
+            boolean isDeleted = userService.delete(userId);
             if (!isDeleted) {
                 return ResponseEntity
                         .status(HttpStatus.NOT_FOUND)
@@ -195,7 +196,7 @@ public class UserController {
                                                @RequestParam String oldPassword,
                                                @RequestParam String newPassword) {
         try {
-            boolean isChanged = userServiceImpl.changePassword(userId, oldPassword, newPassword);
+            boolean isChanged = userService.changePassword(userId, oldPassword, newPassword);
             if (!isChanged) {
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)

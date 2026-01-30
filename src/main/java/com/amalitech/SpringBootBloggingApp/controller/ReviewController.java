@@ -1,10 +1,15 @@
 package com.amalitech.SpringBootBloggingApp.controller;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateReviewRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateReviewRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ReviewResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.service.ReviewService;
 import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,16 +32,12 @@ public class ReviewController {
     @PostMapping("/create")
     @Operation(summary = "Create a new review", description = "Creates a new review for a post")
     @Tag(name = "Review")
-    public ResponseEntity<?> create(@RequestBody Review review) {
+    public ResponseEntity<?> create(@Valid @RequestBody CreateReviewRequest request) {
         try {
-            Review createdReview = reviewService.create(review);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(createdReview);
+            Review createdReview = reviewService.create(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(DtoMapper.toReviewResponse(createdReview));
         } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
@@ -69,57 +70,41 @@ public class ReviewController {
     @PutMapping("/update")
     @Operation(summary = "Update a review", description = "Updates a review")
     @Tag(name = "Review")
-    public ResponseEntity<Boolean> update(@RequestBody Review review) {
+    public ResponseEntity<?> update(@Valid @RequestBody UpdateReviewRequest request) {
         try {
-            boolean isUpdated = reviewService.update(review);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(isUpdated);
+            Review existing = reviewService.getById(request.getId());
+            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            existing.setRating(request.getRating());
+            existing.setFeedback(request.getFeedback() != null ? request.getFeedback() : "");
+            existing.setUpdatedAt(System.currentTimeMillis());
+            boolean isUpdated = reviewService.update(existing);
+            return ResponseEntity.ok(DtoMapper.toReviewResponse(existing));
         } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(false);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-     /**
-     * Get all reviews
-     * @return a list of all reviews
-     */
     @GetMapping
     @Operation(summary = "Get all reviews", description = "Retrieves a list of all reviews")
     @Tag(name = "Review")
     public ResponseEntity<?> getAll() {
         try {
             List<Review> reviews = reviewService.getAll();
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(reviews);
+            return ResponseEntity.ok(DtoMapper.toReviewResponses(reviews));
         } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    /**
-     * Get reviews by post ID
-     * @param postId the ID of the post to get reviews for
-     * @return a list of reviews for the specified post
-     */
-     @GetMapping("/post/{postId}")
+    @GetMapping("/post/{postId}")
     @Operation(summary = "Get reviews by post ID", description = "Retrieves a list of reviews for a specific post")
     @Tag(name = "Review")
     public ResponseEntity<?> getByPost(@PathVariable String postId) {
         try {
             List<Review> reviews = reviewService.getByPost(postId);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(reviews);
+            return ResponseEntity.ok(DtoMapper.toReviewResponses(reviews));
         } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

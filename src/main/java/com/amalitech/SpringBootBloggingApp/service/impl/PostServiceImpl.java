@@ -1,9 +1,11 @@
 package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreatePostRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.PostRepositoryImpl;
+import com.amalitech.SpringBootBloggingApp.repository.impl.UserRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.service.PostService;
 
 import com.amalitech.SpringBootBloggingApp.util.ValidationUtil;
@@ -15,11 +17,27 @@ import java.util.List;
 @Service
 public class PostServiceImpl implements PostService {
     private final PostRepositoryImpl postRepository;
+    private final UserRepositoryImpl userRepository;
     private final Cache<String, User> userCache;
 
-    public PostServiceImpl(PostRepositoryImpl postRepository, Cache<String, User> userCache) {
+    public PostServiceImpl(PostRepositoryImpl postRepository, UserRepositoryImpl userRepository, Cache<String, User> userCache) {
         this.postRepository = postRepository;
+        this.userRepository = userRepository;
         this.userCache = userCache;
+    }
+
+    @Override
+    public Post create(CreatePostRequest request) {
+        User author = userRepository.findById(request.getAuthorId()).orElseThrow(() -> new UserInputsException("Author not found"));
+        Post post = new Post();
+        post.setAuthor(author);
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        post.setPublished(request.getPublished() != null && request.getPublished());
+        long now = System.currentTimeMillis();
+        post.setCreatedAt(now);
+        post.setUpdatedAt(now);
+        return postRepository.save(post);
     }
 
     @Override
