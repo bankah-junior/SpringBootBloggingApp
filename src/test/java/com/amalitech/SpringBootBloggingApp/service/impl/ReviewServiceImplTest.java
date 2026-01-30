@@ -1,6 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.ReviewRepositoryImpl;
@@ -36,10 +37,22 @@ class ReviewServiceImplTest {
     private Review testReview2;
     private List<Review> testReviews;
 
+    private Post testPost;
+    private Post testPost2;
+
+    private User testUser;
+    private User testUser2;
+
     @BeforeEach
     void setUp() {
-        testReview = new Review("6972347565b2f32d5ed11f0d", "696e40258e370aa034f5f28f", "696e40248e370aa034f5f28a", 5, "Excellent post!", 123456789L, null);
-        testReview2 = new Review("6972347565b2f32d5ed11f0e", "696e40258e370aa034f5f290", "6972332865b2f32d5ed11f02", 4, "Good content", 123456790L, null);
+        testUser = new User("697349d17b196ad927aa89fa", "testuser", "testuser@example.com", "password123", 123456789L, null);
+        testUser2 = new User("697349d17b196ad927aa89fb", "testuser2", "testuser2@example.com", "password456", 123456790L, null);
+
+        testPost = new Post("697349d17b196ad927aa89fc", testUser, "Test Post", "This is a test post", true, 123456789L, null, List.of());
+        testPost2 = new Post("697349d17b196ad927aa89fd", testUser2, "Test Post 2", "This is another test post", true, 123456790L, null, List.of());
+
+        testReview = new Review("6972347565b2f32d5ed11f0d", testPost, testUser, 5, "Excellent post!", 123456789L, null);
+        testReview2 = new Review("6972347565b2f32d5ed11f0e", testPost2, testUser2, 4, "Good content", 123456790L, null);
         testReviews = List.of(testReview, testReview2);
     }
 
@@ -52,8 +65,8 @@ class ReviewServiceImplTest {
 
         assertNotNull(result);
         assertEquals(testReview.getId(), result.getId());
-        assertEquals(testReview.getUserId(), result.getUserId());
-        assertEquals(testReview.getPostId(), result.getPostId());
+        assertEquals(testReview.getUser().getId(), result.getUser().getId());
+        assertEquals(testReview.getPost().getId(), result.getPost().getId());
         assertEquals(testReview.getRating(), result.getRating());
         assertEquals(testReview.getFeedback(), result.getFeedback());
         verify(reviewRepository).save(testReview);
@@ -62,7 +75,8 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Invalid UserId Throws UserInputsException")
     void create_InvalidUserId_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "invalid-id", "post1", 5, "Excellent post!", 123456789L, null);
+        User invalidUser = new User("1", "invaliduser", "invaliduser@example.com", "password123", 123456789L, null);
+        Review invalidReview = new Review("1", testPost, invalidUser, 5, "Excellent post!", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -71,7 +85,8 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Invalid PostId Throws UserInputsException")
     void create_InvalidPostId_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "invalid-id", 5, "Excellent post!", 123456789L, null);
+        testPost.setId("1");
+        Review invalidReview = new Review("1", testPost, testUser, 5, "Excellent post!", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -80,7 +95,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Invalid Rating Throws UserInputsException")
     void create_InvalidRating_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "post1", 6, "Excellent post!", 123456789L, null);
+        Review invalidReview = new Review("1", testPost, testUser, 6, "Excellent post!", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -89,7 +104,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Invalid Rating Zero Throws UserInputsException")
     void create_InvalidRatingZero_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "post1", 0, "Excellent post!", 123456789L, null);
+        Review invalidReview = new Review("1", testPost, testUser, 0, "Excellent post!", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -98,7 +113,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Invalid Feedback Throws UserInputsException")
     void create_InvalidFeedback_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "post1", 5, "", 123456789L, null);
+        Review invalidReview = new Review("1", testPost, testUser, 5, "", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -107,7 +122,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Null Feedback Throws UserInputsException")
     void create_NullFeedback_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "post1", 5, null, 123456789L, null);
+        Review invalidReview = new Review("1", testPost, testUser, 5, null, 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -156,7 +171,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Update Invalid Review Id Throws UserInputsException")
     void update_InvalidReviewId_ThrowsUserInputsException() {
-        Review invalidReview = new Review("invalid-id", "user1", "post1", 5, "Excellent post!", 123456789L, null);
+        Review invalidReview = new Review("invalid-id", testPost, testUser, 5, "Excellent post!", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.update(invalidReview));
         verify(reviewRepository, never()).update(any(Review.class));
@@ -177,15 +192,15 @@ class ReviewServiceImplTest {
     @DisplayName("Get Reviews By Post Valid Post Id Returns Post Reviews")
     void getByPost_ValidPostId_ReturnsPostReviews() {
         List<Review> expectedReviews = List.of(testReview, testReview2);
-        when(reviewRepository.findByPostId(testReview2.getPostId())).thenReturn(expectedReviews);
+        when(reviewRepository.findByPostId(testPost2.getId())).thenReturn(expectedReviews);
 
-        List<Review> result = reviewService.getByPost(testReview2.getPostId());
+        List<Review> result = reviewService.getByPost(testPost2.getId());
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(testReview.getPostId(), result.get(0).getPostId());
-        assertEquals(testReview2.getPostId(), result.get(1).getPostId());
-        verify(reviewRepository).findByPostId(testReview2.getPostId());
+        assertEquals(testReview.getPost().getId(), result.get(0).getPost().getId());
+        assertEquals(testReview2.getPost().getId(), result.get(1).getPost().getId());
+        verify(reviewRepository).findByPostId(testPost2.getId());
     }
 
     @Test
@@ -210,12 +225,12 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Get Average Rating For Post Valid Post Id Returns Average Rating")
     void getAverageRatingForPost_ValidPostId_ReturnsAverageRating() {
-        when(reviewRepository.calculateAverageRating(testReview2.getPostId())).thenReturn(4.5);
+        when(reviewRepository.calculateAverageRating(testPost2.getId())).thenReturn(4.5);
 
-        double result = reviewService.getAverageRatingForPost(testReview2.getPostId());
+        double result = reviewService.getAverageRatingForPost(testPost2.getId());
 
         assertEquals(4.5, result);
-        verify(reviewRepository).calculateAverageRating(testReview2.getPostId());
+        verify(reviewRepository).calculateAverageRating(testPost2.getId());
     }
 
     @Test
@@ -265,7 +280,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Review With Valid Data Calls Repository Save")
     void create_ReviewWithValidData_CallsRepositorySave() {
-        Review validReview = new Review("3", testReview2.getPostId(), "696e40248e370aa034f5f28a", 3, "Average content", 123456791L, null);
+        Review validReview = new Review("3", testPost, testUser, 3, "Average content", 123456791L, null);
         when(reviewRepository.save(validReview)).thenReturn(validReview);
 
         Review result = reviewService.create(validReview);
@@ -277,7 +292,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Review With Minimum Rating Returns Review")
     void create_ReviewWithMinimumRating_ReturnsReview() {
-        Review validReview = new Review("4", testReview2.getPostId(), "696e40248e370aa034f5f28a", 1, "Poor content", 123456792L, null);
+        Review validReview = new Review("4", testPost, testUser, 1, "Poor content", 123456792L, null);
         when(reviewRepository.save(validReview)).thenReturn(validReview);
 
         Review result = reviewService.create(validReview);
@@ -290,7 +305,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Review With Maximum Rating Returns Review")
     void create_ReviewWithMaximumRating_ReturnsReview() {
-        Review validReview = new Review("6972347565b2f32d5ed11f0f", "696e40258e370aa034f5f291", "696e40248e370aa034f5f28a", 5, "Excellent content", 123456793L, null);
+        Review validReview = new Review("6972347565b2f32d5ed11f0f", testPost, testUser, 5, "Excellent content", 123456793L, null);
         when(reviewRepository.save(validReview)).thenReturn(validReview);
 
         Review result = reviewService.create(validReview);
@@ -303,7 +318,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Update Review With Valid Id Calls Repository Update")
     void update_ReviewWithValidId_CallsRepositoryUpdate() {
-        Review updatedReview = new Review(testReview.getId(), testReview2.getPostId(), "696e40248e370aa034f5f28a", 4, "Updated feedback", 123456794L, null);
+        Review updatedReview = new Review(testReview.getId(), testPost, testUser, 4, "Updated feedback", 123456794L, null);
         when(reviewRepository.update(updatedReview)).thenReturn(true);
 
         boolean result = reviewService.update(updatedReview);
@@ -326,29 +341,29 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Get Reviews By Post Id Returns List Of Reviews")
     void getByPost_ReviewWithValidPostId_CallsRepositoryFindByPostId() {
-        when(reviewRepository.findByPostId(testReview2.getPostId())).thenReturn(List.of(testReview));
+        when(reviewRepository.findByPostId(testPost.getId())).thenReturn(List.of(testReview));
 
-        List<Review> result = reviewService.getByPost(testReview2.getPostId());
+        List<Review> result = reviewService.getByPost(testPost.getId());
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(reviewRepository).findByPostId(testReview2.getPostId());
+        verify(reviewRepository).findByPostId(testPost.getId());
     }
 
     @Test
     @DisplayName("Get Average Rating For Post With Valid Post Id Calls Repository CalculateAverageRating")
     void getAverageRatingForPost_ReviewWithValidPostId_CallsRepositoryCalculateAverageRating() {
-        when(reviewRepository.calculateAverageRating(testReview2.getPostId())).thenReturn(3.5);
+        when(reviewRepository.calculateAverageRating(testPost.getId())).thenReturn(3.5);
 
-        double result = reviewService.getAverageRatingForPost(testReview2.getPostId());
+        double result = reviewService.getAverageRatingForPost(testPost.getId());
 
         assertEquals(3.5, result);
-        verify(reviewRepository).calculateAverageRating(testReview2.getPostId());
+        verify(reviewRepository).calculateAverageRating(testPost.getId());
     }
 
     @Test
     @DisplayName("Create Review With Negative Rating Throws UserInputsException")
     void create_ReviewWithNegativeRating_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "post1", -1, "Negative rating", 123456789L, null);
+        Review invalidReview = new Review("1", testPost, testUser, -1, "Negative rating", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -357,7 +372,7 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Create Review With Too High Rating Throws UserInputsException")
     void create_ReviewWithTooHighRating_ThrowsUserInputsException() {
-        Review invalidReview = new Review("1", "user1", "post1", 10, "Too high rating", 123456789L, null);
+        Review invalidReview = new Review("1", testPost, testUser, 10, "Too high rating", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> reviewService.create(invalidReview));
         verify(reviewRepository, never()).save(any(Review.class));
@@ -380,11 +395,11 @@ class ReviewServiceImplTest {
     @Test
     @DisplayName("Get Average Rating For Post With Multiple Reviews Returns Correct Average")
     void getAverageRatingForPost_WithMultipleReviews_ReturnsCorrectAverage() {
-        when(reviewRepository.calculateAverageRating(testReview2.getPostId())).thenReturn(4.5);
+        when(reviewRepository.calculateAverageRating(testPost.getId())).thenReturn(4.5);
 
-        double result = reviewService.getAverageRatingForPost(testReview2.getPostId());
+        double result = reviewService.getAverageRatingForPost(testPost.getId());
 
         assertEquals(4.5, result, 0.01);
-        verify(reviewRepository).calculateAverageRating(testReview2.getPostId());
+        verify(reviewRepository).calculateAverageRating(testPost.getId());
     }
 }

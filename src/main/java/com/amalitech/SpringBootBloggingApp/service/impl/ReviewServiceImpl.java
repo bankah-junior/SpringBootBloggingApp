@@ -48,6 +48,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Review create(Review review) {
+        if (!ValidationUtil.isValidObjectId(review.getUser().getId())) {
+            throw new UserInputsException("Invalid user ID");
+        }
+        if (!ValidationUtil.isValidObjectId(review.getPost().getId())) {
+            throw new UserInputsException("Invalid post ID");
+        }
         if (!ValidationUtil.isValidRating(review.getRating())) {
             throw new UserInputsException("Invalid rating");
         }

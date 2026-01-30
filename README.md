@@ -72,7 +72,7 @@ The application will be available at:
 
 ---
 
-## 📡 API Endpoints
+## 📡 REST API Endpoints
 
 ### User Management
 
@@ -115,6 +115,19 @@ The application will be available at:
 | `GET`       | `/api/v1/tags`       | Retrieve all tags        |
 | `GET`       | `/api/v1/tags/post/{postId}` | Retrieve tags by post  |
 | `DELETE`    | `/api/v1/tags/{id}`  | Delete a tag             |
+
+---
+
+## GraphQL 
+### 1️⃣ GraphQL Endpoint
+
+The GraphQL endpoint is available at:
+👉 **[http://localhost:8080/graphql](http://localhost:8080/graphql)**
+
+### 2️⃣ GraphQL Playground
+
+You can use the GraphQL Playground to test queries and mutations. Access it at:
+👉 **[http://localhost:8080/graphiql](http://localhost:8080/graphiql)**
 
 ---
 
