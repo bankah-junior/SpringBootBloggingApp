@@ -3,6 +3,7 @@ package com.amalitech.SpringBootBloggingApp.controller;
 import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateCommentRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.CommentResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 import com.amalitech.SpringBootBloggingApp.service.CommentService;
@@ -32,12 +33,12 @@ public class CommentController {
     @PostMapping("/create")
     @Operation(summary = "Create a comment", description = "Creates a new comment for a post")
     @Tag(name = "Comment")
-    public ResponseEntity<?> create(@Valid @RequestBody CreateCommentRequest request) {
+    public ResponseEntity<ApiResponse<CommentResponse>> create(@Valid @RequestBody CreateCommentRequest request) {
         try {
             Comment createdComment = commentService.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(DtoMapper.toCommentResponse(createdComment));
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Comment created", DtoMapper.toCommentResponse(createdComment)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -49,86 +50,79 @@ public class CommentController {
     @GetMapping("/{commentId}")
     @Operation(summary = "Find comment by id", description = "Retrieves a comment by its id")
     @Tag(name = "Comment")
-    public ResponseEntity<?> findById(@PathVariable String commentId) {
+    public ResponseEntity<ApiResponse<CommentResponse>> findById(@PathVariable String commentId) {
         try {
             Comment comment = commentService.findById(commentId);
-            if (comment == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            return ResponseEntity.ok(DtoMapper.toCommentResponse(comment));
+            if (comment == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+            return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponse(comment)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping("/all")
     @Operation(summary = "Find all comments", description = "Retrieves all comments")
     @Tag(name = "Comment")
-    public ResponseEntity<?> getAll() {
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> getAll() {
         try {
             List<Comment> comments = commentService.getAll();
-            return ResponseEntity.ok(DtoMapper.toCommentResponses(comments));
+            return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Find comments by user id", description = "Retrieves all comments for a user")
     @Tag(name = "Comment")
-    public ResponseEntity<?> findByUserId(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> findByUserId(@PathVariable String userId) {
         try {
             List<Comment> comments = commentService.getByUser(userId);
-            return ResponseEntity.ok(DtoMapper.toCommentResponses(comments));
+            return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping("/post/{postId}")
     @Operation(summary = "Find comments by post id", description = "Retrieves all comments for a post")
     @Tag(name = "Comment")
-    public ResponseEntity<?> findByPostId(@PathVariable String postId) {
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> findByPostId(@PathVariable String postId) {
         try {
             List<Comment> comments = commentService.getByPost(postId);
-            return ResponseEntity.ok(DtoMapper.toCommentResponses(comments));
+            return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @PutMapping("/update")
     @Operation(summary = "Update a comment", description = "Updates a comment")
     @Tag(name = "Comment")
-    public ResponseEntity<?> update(@Valid @RequestBody UpdateCommentRequest request) {
+    public ResponseEntity<ApiResponse<CommentResponse>> update(@Valid @RequestBody UpdateCommentRequest request) {
         try {
             Comment existing = commentService.findById(request.getId());
-            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
             existing.setContent(request.getContent());
             existing.setUpdatedAt(System.currentTimeMillis());
             boolean updated = commentService.update(existing);
-            if (!updated) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            return ResponseEntity.ok(DtoMapper.toCommentResponse(existing));
+            if (!updated) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+            return ResponseEntity.ok(ApiResponse.success("Comment updated", DtoMapper.toCommentResponse(existing)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
-     /**
-     * Delete a comment
-     * @param commentId the comment id to delete
-     * @return true if the comment was deleted, false otherwise
-     */
-     @DeleteMapping("/delete/{commentId}")
+    @DeleteMapping("/delete/{commentId}")
     @Operation(summary = "Delete a comment", description = "Deletes a comment by its id")
     @Tag(name = "Comment")
-    public ResponseEntity<Boolean> delete(@PathVariable String commentId) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String commentId) {
         try {
             boolean deleted = commentService.delete(commentId);
-            if (!deleted) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(true);
+            if (!deleted) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+            return ResponseEntity.ok(ApiResponse.success("Comment deleted", null));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 }

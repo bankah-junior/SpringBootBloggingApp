@@ -3,6 +3,7 @@ package com.amalitech.SpringBootBloggingApp.controller;
 import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateReviewRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateReviewRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ReviewResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.service.ReviewService;
@@ -32,12 +33,12 @@ public class ReviewController {
     @PostMapping("/create")
     @Operation(summary = "Create a new review", description = "Creates a new review for a post")
     @Tag(name = "Review")
-    public ResponseEntity<?> create(@Valid @RequestBody CreateReviewRequest request) {
+    public ResponseEntity<ApiResponse<ReviewResponse>> create(@Valid @RequestBody CreateReviewRequest request) {
         try {
             Review createdReview = reviewService.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(DtoMapper.toReviewResponse(createdReview));
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Review created", DtoMapper.toReviewResponse(createdReview)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -49,16 +50,13 @@ public class ReviewController {
     @DeleteMapping("/delete/{reviewId}")
     @Operation(summary = "Delete a review by ID", description = "Deletes a review by its ID")
     @Tag(name = "Review")
-    public ResponseEntity<Boolean> delete(@PathVariable String reviewId) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String reviewId) {
         try {
             boolean isDeleted = reviewService.delete(reviewId);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(isDeleted);
+            if (!isDeleted) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Review not found"));
+            return ResponseEntity.ok(ApiResponse.success("Review deleted", null));
         } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(false);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -70,62 +68,53 @@ public class ReviewController {
     @PutMapping("/update")
     @Operation(summary = "Update a review", description = "Updates a review")
     @Tag(name = "Review")
-    public ResponseEntity<?> update(@Valid @RequestBody UpdateReviewRequest request) {
+    public ResponseEntity<ApiResponse<ReviewResponse>> update(@Valid @RequestBody UpdateReviewRequest request) {
         try {
             Review existing = reviewService.getById(request.getId());
-            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Review not found"));
             existing.setRating(request.getRating());
             existing.setFeedback(request.getFeedback() != null ? request.getFeedback() : "");
             existing.setUpdatedAt(System.currentTimeMillis());
-            boolean isUpdated = reviewService.update(existing);
-            return ResponseEntity.ok(DtoMapper.toReviewResponse(existing));
+            reviewService.update(existing);
+            return ResponseEntity.ok(ApiResponse.success("Review updated", DtoMapper.toReviewResponse(existing)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping
     @Operation(summary = "Get all reviews", description = "Retrieves a list of all reviews")
     @Tag(name = "Review")
-    public ResponseEntity<?> getAll() {
+    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getAll() {
         try {
             List<Review> reviews = reviewService.getAll();
-            return ResponseEntity.ok(DtoMapper.toReviewResponses(reviews));
+            return ResponseEntity.ok(ApiResponse.success(DtoMapper.toReviewResponses(reviews)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping("/post/{postId}")
     @Operation(summary = "Get reviews by post ID", description = "Retrieves a list of reviews for a specific post")
     @Tag(name = "Review")
-    public ResponseEntity<?> getByPost(@PathVariable String postId) {
+    public ResponseEntity<ApiResponse<List<ReviewResponse>>> getByPost(@PathVariable String postId) {
         try {
             List<Review> reviews = reviewService.getByPost(postId);
-            return ResponseEntity.ok(DtoMapper.toReviewResponses(reviews));
+            return ResponseEntity.ok(ApiResponse.success(DtoMapper.toReviewResponses(reviews)));
         } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 
-     /**
-     * Get average rating for a post
-     * @param postId the ID of the post to get the average rating for
-     * @return the average rating for the specified post
-     */
-     @GetMapping("/post/{postId}/average-rating")
+    @GetMapping("/post/{postId}/average-rating")
     @Operation(summary = "Get average rating for a post", description = "Retrieves the average rating for a specific post")
     @Tag(name = "Review")
-    public ResponseEntity<?> getAverageRatingForPost(@PathVariable String postId) {
+    public ResponseEntity<ApiResponse<Double>> getAverageRatingForPost(@PathVariable String postId) {
         try {
             double averageRating = reviewService.getAverageRatingForPost(postId);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(averageRating);
+            return ResponseEntity.ok(ApiResponse.success(averageRating));
         } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 }
