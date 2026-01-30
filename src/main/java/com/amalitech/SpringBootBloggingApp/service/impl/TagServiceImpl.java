@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateTagRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.TagRepositoryImpl;
@@ -52,6 +53,14 @@ public class TagServiceImpl implements TagService {
     @Override
     public List<Tag> getAll() {
         return tagRepository.findAll();
+    }
+
+    @Override
+    public PageResponse<Tag> getAllPaginated(int page, int size) {
+        long total = tagRepository.count();
+        int skip = page * size;
+        var content = tagRepository.findAll(skip, size);
+        return new PageResponse<>(content, page, size, total);
     }
 
     @Override

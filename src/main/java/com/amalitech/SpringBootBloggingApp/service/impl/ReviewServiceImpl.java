@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateReviewRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
@@ -119,5 +120,13 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<Review> getAll() {
         return reviewRepository.findAll();
+    }
+
+    @Override
+    public PageResponse<Review> getAllPaginated(int page, int size) {
+        long total = reviewRepository.count();
+        int skip = page * size;
+        var content = reviewRepository.findAll(skip, size);
+        return new PageResponse<>(content, page, size, total);
     }
 }

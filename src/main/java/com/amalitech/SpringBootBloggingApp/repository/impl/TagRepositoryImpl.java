@@ -36,6 +36,17 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
+    public List<Tag> findAll(int skip, int limit) {
+        var query = new Query().skip((long) skip).limit(limit);
+        return mongoTemplate.find(query, Tag.class, "tags");
+    }
+
+    @Override
+    public long count() {
+        return mongoTemplate.count(new Query(), Tag.class, "tags");
+    }
+
+    @Override
     public boolean update(Tag entity) {
         var query = new Query(Criteria.where("id").is(entity.getId()));
         var update = new org.springframework.data.mongodb.core.query.Update()

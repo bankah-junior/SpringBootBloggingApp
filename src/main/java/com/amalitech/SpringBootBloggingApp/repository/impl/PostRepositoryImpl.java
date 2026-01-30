@@ -35,6 +35,17 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public List<Post> findAll(int skip, int limit) {
+        var query = new Query().skip((long) skip).limit(limit);
+        return mongoTemplate.find(query, Post.class, "posts");
+    }
+
+    @Override
+    public long count() {
+        return mongoTemplate.count(new Query(), Post.class, "posts");
+    }
+
+    @Override
     public boolean update(Post entity) {
         var query = new Query(Criteria.where("id").is(entity.getId()));
         var update = new org.springframework.data.mongodb.core.query.Update()

@@ -35,6 +35,17 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<User> findAll(int skip, int limit) {
+        var query = new Query().skip((long) skip).limit(limit);
+        return mongoTemplate.find(query, User.class, "users");
+    }
+
+    @Override
+    public long count() {
+        return mongoTemplate.count(new Query(), User.class, "users");
+    }
+
+    @Override
     public boolean update(User entity) {
         var query = new Query(Criteria.where("id").is(entity.getId()));
         var update = new org.springframework.data.mongodb.core.query.Update()

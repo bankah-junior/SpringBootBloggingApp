@@ -1,7 +1,15 @@
 package com.amalitech.SpringBootBloggingApp.model.dto;
 
-import com.amalitech.SpringBootBloggingApp.model.dto.response.*;
-import com.amalitech.SpringBootBloggingApp.model.entity.*;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.CommentResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PostResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ReviewResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.TagResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
+import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
+import com.amalitech.SpringBootBloggingApp.model.entity.Review;
+import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
+import com.amalitech.SpringBootBloggingApp.model.entity.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,6 +17,15 @@ import java.util.stream.Collectors;
 public final class DtoMapper {
 
     private DtoMapper() {}
+
+    public static UserResponse toUserResponseWithoutToken(User u) {
+        if (u == null) return null;
+        return new UserResponse(u.getId(), u.getUsername(), u.getEmail(), u.getCreatedAt(), u.getUpdatedAt(), null);
+    }
+
+    public static List<UserResponse> toUserResponsesWithoutToken(List<User> users) {
+        return users == null ? List.of() : users.stream().map(DtoMapper::toUserResponseWithoutToken).collect(Collectors.toList());
+    }
 
     public static PostResponse toPostResponse(Post p) {
         if (p == null) return null;

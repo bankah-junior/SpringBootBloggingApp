@@ -5,6 +5,7 @@ import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentReques
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateCommentRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.CommentResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 import com.amalitech.SpringBootBloggingApp.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,11 +53,14 @@ public class CommentController {
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Find all comments", description = "Retrieves all comments")
+    @Operation(summary = "Find all comments", description = "Retrieves comments with optional pagination (page, size).")
     @Tag(name = "Comment")
-    public ResponseEntity<ApiResponse<List<CommentResponse>>> getAll() {
-        List<Comment> comments = commentService.getAll();
-        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
+    public ResponseEntity<ApiResponse<PageResponse<CommentResponse>>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        var pr = commentService.getAllPaginated(page, size);
+        var dto = new PageResponse<>(DtoMapper.toCommentResponses(pr.getContent()), pr.getPage(), pr.getSize(), pr.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     @GetMapping("/user/{userId}")

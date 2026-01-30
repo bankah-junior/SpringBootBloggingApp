@@ -3,7 +3,9 @@ package com.amalitech.SpringBootBloggingApp.controller;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.LoginRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.RegisterRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserDetailRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
 import com.amalitech.SpringBootBloggingApp.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,11 +58,14 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Get All Users", description = "Retrieves a list of all users")
+    @Operation(summary = "Get All Users", description = "Retrieves users with optional pagination (page, size).")
     @Tag(name = "User")
-    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
-        List<UserResponse> userResponses = userService.getAll();
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(userResponses));
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        var pr = userService.getAllPaginated(page, size);
+        var dto = new PageResponse<>(DtoMapper.toUserResponsesWithoutToken(pr.getContent()), pr.getPage(), pr.getSize(), pr.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     @PutMapping("/{userId}")
