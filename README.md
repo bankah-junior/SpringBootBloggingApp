@@ -1,7 +1,7 @@
 # 🍃 Spring Boot Blogging App
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![MongoDB](https://img.shields.io/badge/MongoDB-NoSQL-green.svg)](https://www.mongodb.com/)
 [![Maven](https://img.shields.io/badge/Maven-Build%20Tool-blue.svg)](https://maven.apache.org/)
 
@@ -16,6 +16,8 @@ A RESTful API for a blogging application built with Spring Boot. This project sh
 *   **Post Management:** Full CRUD (Create, Read, Update, Delete) operations for blog posts.
 *   **Commenting:** Allows users to comment on posts.
 *   **Tagging:** Enables categorization of posts with tags.
+*   **Review Management:** Allows users to add reviews to posts.
+*   **Efficient Data Handling:** Supports pagination, sorting, and filtering of data.
 *   **API Documentation:** Interactive API documentation with Swagger UI.
 *   **Input Validation**: Bean Validation with meaningful error messages.
 *   **Layered Architecture**: Clear separation using the service layer pattern.
@@ -33,6 +35,7 @@ A RESTful API for a blogging application built with Spring Boot. This project sh
 *   **jBCrypt:** For password hashing.
 *   **JSON Web Token (JWT):** For authentication.
 *   **SpringDoc OpenAPI:** For API documentation.
+*   **Spring Boot AOP:** For logging and performance monitoring.
 
 ---
 
@@ -116,6 +119,17 @@ The application will be available at:
 | `GET`       | `/api/v1/tags/post/{postId}` | Retrieve tags by post  |
 | `DELETE`    | `/api/v1/tags/{id}`  | Delete a tag             |
 
+### Review Management
+
+| HTTP Method | Endpoint                                  | Description                  |
+|-------------|-------------------------------------------|------------------------------|
+| `POST`      | `/api/v1/reviews/create`                  | Create a new review          |
+| `DELETE`    | `/api/v1/reviews/delete/{reviewId}`       | Delete a review by ID        |
+| `PUT`       | `/api/v1/reviews/update`                  | Update an existing review    |
+| `GET`       | `/api/v1/reviews`                         | Retrieve all reviews         |
+| `GET`       | `/api/v1/reviews/post/{postId}`           | Retrieve reviews for a post  |
+| `GET`       | `/api/v1/reviews/post/{postId}/average-rating` | Get average rating for a post|
+
 ---
 
 ## GraphQL 
@@ -128,6 +142,20 @@ The GraphQL endpoint is available at:
 
 You can use the GraphQL Playground to test queries and mutations. Access it at:
 👉 **[http://localhost:8080/graphiql](http://localhost:8080/graphiql)**
+
+---
+
+## 🔬 Aspect-Oriented Programming (AOP)
+
+This project uses Spring Boot AOP to address cross-cutting concerns like logging and performance monitoring.
+
+### Logging
+
+*   **`LoggingAspect`**: Automatically logs method calls, arguments, return values, and exceptions thrown within the service layer (`com.amalitech.SpringBootBloggingApp.service.impl`). This provides valuable insight into the application's runtime behavior without cluttering the business logic with logging statements.
+
+### Performance Monitoring
+
+*   **`PerformanceAspect`**: Measures and logs the execution time for all methods in the service layer. This helps in identifying performance bottlenecks and optimizing slow-running operations.
 
 ---
 
@@ -161,6 +189,8 @@ curl -X POST http://localhost:8080/api/v1/posts \
 ---
 
 ## ⚙️ Configuration
+
+The application uses different configuration profiles for `dev`, `test`, and `prod` environments. You can set the active profile in the `application.yml` file or via environment variables.
 
 MongoDB configuration (`application.yml`):
 
@@ -286,6 +316,12 @@ You can create a `.env` file in the root of the project to override the default 
 ![Swagger UI Screenshot](Swagger01.png)
 
 ![Swagger UI Screenshot](Swagger02.png)
+
+---
+
+## 📈 Performance
+
+A performance report comparing REST and GraphQL performance and evaluating API optimization is available in the `docs` folder. See [PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md) for more details.
 
 ---
 

@@ -48,6 +48,7 @@ public class QueryResolver {
     public List<Tag> tags() {
         return tagService.getAll();
     }
+    
     @QueryMapping
     public List<Review> reviews() {
         return reviewService.getAll();
