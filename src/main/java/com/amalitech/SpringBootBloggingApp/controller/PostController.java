@@ -1,10 +1,16 @@
 package com.amalitech.SpringBootBloggingApp.controller;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreatePostRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdatePostRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PostResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.service.PostService;
 import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,23 +29,15 @@ public class PostController {
     /**
      * Create a new post
      *
-     * @param post the post to create
-     * @return the created post
+     * @param request the post creation request (authorId, title, content, published)
+     * @return the created post as PostResponse
      */
     @PostMapping("/create")
     @Operation(summary = "Create a new post", description = "Creates a new post")
     @Tag(name = "Post")
-    public ResponseEntity<?> createPost(@RequestBody Post post) {
-        try {
-            Post createdPost = postService.create(post);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(createdPost);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<PostResponse>> createPost(@Valid @RequestBody CreatePostRequest request) {
+        Post createdPost = postService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Post created", DtoMapper.toPostResponse(createdPost)));
     }
 
     /**
@@ -51,9 +49,9 @@ public class PostController {
     @GetMapping("/sort/date")
     @Operation(summary = "Get all posts sorted by date", description = "Retrieves all posts sorted by date")
     @Tag(name = "Post")
-    public ResponseEntity<List<Post>> getAllSortedByDate(@RequestParam boolean ascending) {
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getAllSortedByDate(@RequestParam boolean ascending) {
         List<Post> sortedPosts = postService.sortByDate(postService.getAll(), ascending);
-        return ResponseEntity.ok(sortedPosts);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(sortedPosts)));
     }
 
     /**
@@ -65,9 +63,9 @@ public class PostController {
     @GetMapping("/sort/title")
     @Operation(summary = "Get all posts sorted by title", description = "Retrieves all posts sorted by title")
     @Tag(name = "Post")
-    public ResponseEntity<List<Post>> getAllSortedByTitle(@RequestParam boolean ascending) {
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getAllSortedByTitle(@RequestParam boolean ascending) {
         List<Post> sortedPosts = postService.sortByTitle(postService.getAll(), ascending);
-        return ResponseEntity.ok(sortedPosts);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(sortedPosts)));
     }
 
     /**
@@ -79,23 +77,33 @@ public class PostController {
     @GetMapping("/sort/all")
     @Operation(summary = "Get all sorted posts", description = "Retrieves all posts sorted by date and title")
     @Tag(name = "Post")
-    public ResponseEntity<List<Post>> getAllSorted(@RequestParam boolean ascending) {
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getAllSorted(@RequestParam boolean ascending) {
         List<Post> sortedPosts = postService.getAllSorted("date", ascending);
-        return ResponseEntity.ok(sortedPosts);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(sortedPosts)));
     }
 
     /**
      * Update a post
      *
-     * @param post the post to update
-     * @return the updated post
+     * @param request the update request (id, title, content, published)
+     * @return the updated post as PostResponse
      */
     @PutMapping("/update")
     @Operation(summary = "Update a post", description = "Updates a post")
     @Tag(name = "Post")
-    public ResponseEntity<Post> updatePost(@RequestBody Post post) {
-        Post updatedPost = postService.update(post);
-        return ResponseEntity.ok(updatedPost);
+    public ResponseEntity<?> updatePost(@Valid @RequestBody UpdatePostRequest request) {
+        try {
+            Post existing = postService.getById(request.getId());
+            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            existing.setTitle(request.getTitle());
+            existing.setContent(request.getContent());
+            existing.setPublished(request.isPublished());
+            existing.setUpdatedAt(System.currentTimeMillis());
+            Post updatedPost = postService.update(existing);
+            return ResponseEntity.ok(DtoMapper.toPostResponse(updatedPost));
+        } catch (UserInputsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     /**
@@ -107,15 +115,9 @@ public class PostController {
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Delete a post by ID", description = "Deletes a post by ID")
     @Tag(name = "Post")
-    public ResponseEntity<?> deletePostById(@PathVariable String id) {
-        try {
-            postService.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<Void>> deletePostById(@PathVariable String id) {
+        postService.delete(id);
+        return ResponseEntity.ok(ApiResponse.success("Post deleted", null));
     }
 
     /**
@@ -126,114 +128,52 @@ public class PostController {
     @GetMapping("/all")
     @Operation(summary = "Get all posts", description = "Retrieves all posts")
     @Tag(name = "Post")
-    public ResponseEntity<?> getAllPosts() {
-        try {
-            List<Post> posts = postService.getAll();
-            return ResponseEntity.ok(posts);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getAllPosts() {
+        List<Post> posts = postService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(posts)));
     }
 
     /**
      * Get a post by ID
-     *
-     * @param id the ID of the post to retrieve
-     * @return ResponseEntity with post if successful, or bad request with error message if not
      */
     @GetMapping("/{id}")
     @Operation(summary = "Get a post by ID", description = "Retrieves a post by ID")
     @Tag(name = "Post")
-    public ResponseEntity<?> getPostById(@PathVariable String id) {
-        try {
-            Post post = postService.getById(id);
-            return ResponseEntity.ok(post);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<PostResponse>> getPostById(@PathVariable String id) {
+        Post post = postService.getById(id);
+        if (post == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Post not found"));
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponse(post)));
     }
 
-    /**
-     * Get posts by author ID
-     *
-     * @param authorId the ID of the author
-     * @return ResponseEntity with list of posts if successful, or bad request with error message if not
-     */
     @GetMapping("/author/{authorId}")
     @Operation(summary = "Get posts by author ID", description = "Retrieves all posts by a specific author")
     @Tag(name = "Post")
-    public ResponseEntity<?> getPostsByAuthorId(@PathVariable String authorId) {
-        try {
-            List<Post> posts = postService.getByAuthor(authorId);
-            return ResponseEntity.ok(posts);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getPostsByAuthorId(@PathVariable String authorId) {
+        List<Post> posts = postService.getByAuthor(authorId);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(posts)));
     }
 
-    /**
-     * Search posts by title keyword
-     *
-     * @param keyword the keyword to search for
-     * @return ResponseEntity with list of posts if successful, or bad request with error message if not
-     */
     @GetMapping("/search/title/{keyword}")
     @Operation(summary = "Search posts by title", description = "Searches posts by title keyword")
     @Tag(name = "Post")
-    public ResponseEntity<?> searchPostsByTitle(@PathVariable String keyword) {
-        try {
-            List<Post> posts = postService.searchByTitle(keyword);
-            return ResponseEntity.ok(posts);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<PostResponse>>> searchPostsByTitle(@PathVariable String keyword) {
+        List<Post> posts = postService.searchByTitle(keyword);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(posts)));
     }
 
-    /**
-     * Search posts by tag name
-     *
-     * @param tagName the tag name to search for
-     * @return ResponseEntity with list of posts if successful, or bad request with error message if not
-     */
     @GetMapping("/search/tag/{tagName}")
     @Operation(summary = "Search posts by tag", description = "Searches posts by tag name")
     @Tag(name = "Post")
-    public ResponseEntity<?> searchPostsByTag(@PathVariable String tagName) {
-        try {
-            List<Post> posts = postService.searchByTag(tagName);
-            return ResponseEntity.ok(posts);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<PostResponse>>> searchPostsByTag(@PathVariable String tagName) {
+        List<Post> posts = postService.searchByTag(tagName);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(posts)));
     }
 
-    /**
-     * Get posts by published status
-     *
-     * @param published the published status to filter by
-     * @return ResponseEntity with list of posts if successful, or bad request with error message if not
-     */
     @GetMapping("/published/{published}")
     @Operation(summary = "Get posts by published status", description = "Retrieves posts by published status")
     @Tag(name = "Post")
-    public ResponseEntity<?> getPostsByPublished(@PathVariable boolean published) {
-        try {
-            List<Post> posts = postService.getByPublished(published);
-            return ResponseEntity.ok(posts);
-        } catch (UserInputsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<PostResponse>>> getPostsByPublished(@PathVariable boolean published) {
+        List<Post> posts = postService.getByPublished(published);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(posts)));
     }
 }

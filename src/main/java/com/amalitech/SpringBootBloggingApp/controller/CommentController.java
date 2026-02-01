@@ -1,10 +1,15 @@
 package com.amalitech.SpringBootBloggingApp.controller;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateCommentRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.CommentResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 import com.amalitech.SpringBootBloggingApp.service.CommentService;
-import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,16 +29,12 @@ public class CommentController {
      * @param comment the comment to create
      * @return the created comment if valid, otherwise a bad request response with an error message
      */
-     @PostMapping("/create")
+    @PostMapping("/create")
     @Operation(summary = "Create a comment", description = "Creates a new comment for a post")
     @Tag(name = "Comment")
-    public ResponseEntity<?> create(@RequestBody Comment comment) {
-        try {
-            Comment createdComment = commentService.create(comment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<CommentResponse>> create(@Valid @RequestBody CreateCommentRequest request) {
+        Comment createdComment = commentService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Comment created", DtoMapper.toCommentResponse(createdComment)));
     }
 
     /**
@@ -41,108 +42,58 @@ public class CommentController {
      * @param commentId the comment id to find
      * @return the comment with the given id if found, otherwise null
      */
-     @GetMapping("/{commentId}")
+    @GetMapping("/{commentId}")
     @Operation(summary = "Find comment by id", description = "Retrieves a comment by its id")
     @Tag(name = "Comment")
-    public ResponseEntity<?> findById(@PathVariable String commentId) {
-        try {
-            Comment comment = commentService.findById(commentId);
-            if (comment == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(comment);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<CommentResponse>> findById(@PathVariable String commentId) {
+        Comment comment = commentService.findById(commentId);
+        if (comment == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponse(comment)));
     }
 
-    /**
-     * Find all comments
-     * @return all comments if any, otherwise an empty list
-     */
-     @GetMapping("/all")
+    @GetMapping("/all")
     @Operation(summary = "Find all comments", description = "Retrieves all comments")
     @Tag(name = "Comment")
-    public ResponseEntity<?> getAll() {
-        try {
-            List<Comment> comments = commentService.getAll();
-            return ResponseEntity.status(HttpStatus.OK).body(comments);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> getAll() {
+        List<Comment> comments = commentService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
     }
 
-    /**
-     * Find comments by user id
-     * @param userId the user id to find comments for
-     * @return all comments for the given user id if any, otherwise an empty list
-     */
-     @GetMapping("/user/{userId}")
+    @GetMapping("/user/{userId}")
     @Operation(summary = "Find comments by user id", description = "Retrieves all comments for a user")
     @Tag(name = "Comment")
-    public ResponseEntity<?> findByUserId(@PathVariable String userId) {
-        try {
-            List<Comment> comments = commentService.getByUser(userId);
-            return ResponseEntity.status(HttpStatus.OK).body(comments);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> findByUserId(@PathVariable String userId) {
+        List<Comment> comments = commentService.getByUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
     }
 
-     /**
-     * Find comments by post id
-     * @param postId the post id to find comments for
-     * @return all comments for the given post id if any, otherwise an empty list
-     */
-     @GetMapping("/post/{postId}")
+    @GetMapping("/post/{postId}")
     @Operation(summary = "Find comments by post id", description = "Retrieves all comments for a post")
     @Tag(name = "Comment")
-    public ResponseEntity<?> findByPostId(@PathVariable String postId) {
-        try {
-            List<Comment> comments = commentService.getByPost(postId);
-            return ResponseEntity.status(HttpStatus.OK).body(comments);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<List<CommentResponse>>> findByPostId(@PathVariable String postId) {
+        List<Comment> comments = commentService.getByPost(postId);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toCommentResponses(comments)));
     }
 
-    /**
-     * Update a comment
-     * @param comment the comment to update
-     * @return true if the comment was updated, false otherwise
-     */
-     @PutMapping("/update")
+    @PutMapping("/update")
     @Operation(summary = "Update a comment", description = "Updates a comment")
     @Tag(name = "Comment")
-    public ResponseEntity<?> update(@RequestBody Comment comment) {
-        try {
-            boolean updated = commentService.update(comment);
-            if (!updated) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(comment);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<CommentResponse>> update(@Valid @RequestBody UpdateCommentRequest request) {
+        Comment existing = commentService.findById(request.getId());
+        if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+        existing.setContent(request.getContent());
+        existing.setUpdatedAt(System.currentTimeMillis());
+        boolean updated = commentService.update(existing);
+        if (!updated) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+        return ResponseEntity.ok(ApiResponse.success("Comment updated", DtoMapper.toCommentResponse(existing)));
     }
 
-     /**
-     * Delete a comment
-     * @param commentId the comment id to delete
-     * @return true if the comment was deleted, false otherwise
-     */
-     @DeleteMapping("/delete/{commentId}")
+    @DeleteMapping("/delete/{commentId}")
     @Operation(summary = "Delete a comment", description = "Deletes a comment by its id")
     @Tag(name = "Comment")
-    public ResponseEntity<Boolean> delete(@PathVariable String commentId) {
-        try {
-            boolean deleted = commentService.delete(commentId);
-            if (!deleted) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(true);
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-        }
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String commentId) {
+        boolean deleted = commentService.delete(commentId);
+        if (!deleted) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Comment not found"));
+        return ResponseEntity.ok(ApiResponse.success("Comment deleted", null));
     }
 }

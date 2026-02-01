@@ -1,6 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateTagRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.TagRepositoryImpl;
@@ -20,6 +21,16 @@ public class TagServiceImpl implements TagService {
     public TagServiceImpl(TagRepositoryImpl tagRepository, Cache<String, User> userCache) {
         this.tagRepository = tagRepository;
         this.userCache = userCache;
+    }
+
+    @Override
+    public Tag create(CreateTagRequest request) {
+        if (!ValidationUtil.isValidTagName(request.getName())) {
+            throw new UserInputsException("Tag name is not valid");
+        }
+        Tag tag = new Tag();
+        tag.setName(request.getName());
+        return tagRepository.save(tag);
     }
 
     @Override
@@ -68,5 +79,16 @@ public class TagServiceImpl implements TagService {
             throw new UserInputsException("Post ID is not valid");
         }
         tagRepository.unassignAllTagsFromPost(postId);
+    }
+
+    @Override
+    public void unassignTagFromPost(String postId, String tagId) {
+        if (!ValidationUtil.isValidObjectId(postId)) {
+            throw new UserInputsException("Post ID is not valid");
+        }
+        if (!ValidationUtil.isValidObjectId(tagId)) {
+            throw new UserInputsException("Tag ID is not valid");
+        }
+        tagRepository.unassignTagFromPost(postId, tagId);
     }
 }

@@ -1,5 +1,6 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateTagRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 public interface TagService {
 
     Tag create(Tag tag);
+
+    Tag create(CreateTagRequest request);
 
     Tag getByName(String name);
 
@@ -17,4 +20,6 @@ public interface TagService {
     List<Tag> getTagsByPost(String postId);
 
     void unassignAllTagsFromPost(String postId);
+
+    void unassignTagFromPost(String postId, String tagId);
 }

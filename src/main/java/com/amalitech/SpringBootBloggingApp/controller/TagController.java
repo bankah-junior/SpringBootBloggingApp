@@ -1,8 +1,13 @@
 package com.amalitech.SpringBootBloggingApp.controller;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateTagRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.TagResponse;
+import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.service.TagService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,136 +18,57 @@ import java.util.List;
 @RequestMapping("/api/v1/tags")
 public class TagController {
     private final TagService tagService;
+
     public TagController(TagService tagService) {
         this.tagService = tagService;
     }
 
-    /**
-     * Get all tags
-     * @return List<Tag>
-     */
     @GetMapping("/all")
     @Operation(summary = "Get all tags", description = "Retrieves a list of all tags")
-    @Tag(name = "Tag")
-    public ResponseEntity<?> getAllTags() {
-        try {
-            List<com.amalitech.SpringBootBloggingApp.model.entity.Tag> tags = tagService.getAll();
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(tags);
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
+    @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
+    public ResponseEntity<ApiResponse<List<TagResponse>>> getAllTags() {
+        List<Tag> tags = tagService.getAll();
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toTagResponses(tags)));
     }
 
-    /**
-     * Create a new tag
-     * @param tag
-     * @return Tag
-     */
-     @PostMapping("/create")
-     @Operation(summary = "Create a new tag", description = "Creates a new tag")
-     @Tag(name = "Tag")
-     public ResponseEntity<?> createTag(@RequestBody com.amalitech.SpringBootBloggingApp.model.entity.Tag tag) {
-        try {
-            com.amalitech.SpringBootBloggingApp.model.entity.Tag createdTag = tagService.create(tag);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(createdTag);
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
-     }
+    @PostMapping("/create")
+    @Operation(summary = "Create a new tag", description = "Creates a new tag")
+    @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
+    public ResponseEntity<ApiResponse<TagResponse>> createTag(@Valid @RequestBody CreateTagRequest request) {
+        Tag createdTag = tagService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tag created", DtoMapper.toTagResponse(createdTag)));
+    }
 
-    /**
-     * Assign a tag to a post
-     * @param postId
-     * @param tagId
-     * @return ResponseEntity<Void>
-     */
-     @PostMapping("/{postId}/assign/{tagId}")
-     @Operation(summary = "Assign a tag to a post", description = "Assigns a tag to a post")
-     @Tag(name = "Tag")
-     public ResponseEntity<?> assignTagToPost(@PathVariable String postId, @PathVariable String tagId) {
-        try {
-            tagService.assignTagToPost(postId, tagId);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .build();
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
-     }
+    @PostMapping("/{postId}/assign/{tagId}")
+    @Operation(summary = "Assign a tag to a post", description = "Assigns a tag to a post")
+    @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
+    public ResponseEntity<ApiResponse<Void>> assignTagToPost(@PathVariable String postId, @PathVariable String tagId) {
+        tagService.assignTagToPost(postId, tagId);
+        return ResponseEntity.ok(ApiResponse.success("Tag assigned to post", null));
+    }
 
-    /**
-     * Get all tags assigned to a post
-     * @param postId
-     * @return List<Tag>
-     */
     @GetMapping("/{postId}/assigned")
     @Operation(summary = "Get all tags assigned to a post", description = "Retrieves a list of all tags assigned to a post")
-    @Tag(name = "Tag")
-    public ResponseEntity<?> getAllTagsAssignedToPost(@PathVariable String postId) {
-        try {
-            List<com.amalitech.SpringBootBloggingApp.model.entity.Tag> tags = tagService.getTagsByPost(postId);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(tags);
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
+    @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
+    public ResponseEntity<ApiResponse<List<TagResponse>>> getAllTagsAssignedToPost(@PathVariable String postId) {
+        List<Tag> tags = tagService.getTagsByPost(postId);
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toTagResponses(tags)));
     }
 
-    /**
-     * Unassign a tag from a post
-     * @param postId
-     * @param tagId
-     * @return ResponseEntity<Void>
-     */
-     @PostMapping("/{postId}/unassign/{tagId}")
-     @Operation(summary = "Unassign a tag from a post", description = "Unassigns a specific tag from a post")
-     @Tag(name = "Tag")
-    public ResponseEntity<?> unassignTagFromPost(@PathVariable String postId, @PathVariable String tagId) {
-        try {
-            // This method needs to be implemented in TagService
-            // For now, we'll use unassignAllTagsFromPost as a temporary fix
-            tagService.unassignAllTagsFromPost(postId);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .build();
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
-     }
+    @PostMapping("/{postId}/unassign/{tagId}")
+    @Operation(summary = "Unassign a tag from a post", description = "Unassigns a specific tag from a post")
+    @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
+    public ResponseEntity<ApiResponse<Void>> unassignTagFromPost(@PathVariable String postId, @PathVariable String tagId) {
+        tagService.unassignTagFromPost(postId, tagId);
+        return ResponseEntity.ok(ApiResponse.success("Tag unassigned from post", null));
+    }
 
-    /**
-     * Get by name
-     * @param name
-     * @return Tag
-     */
-     @GetMapping("/name/{name}")
-     @Operation(summary = "Get tag by name", description = "Retrieves a tag by its name")
-     @Tag(name = "Tag")
-     public ResponseEntity<?> getTagByName(@PathVariable String name) {
-        try {
-            com.amalitech.SpringBootBloggingApp.model.entity.Tag tag = tagService.getByName(name);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(tag);
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
-     }
+    @GetMapping("/name/{name}")
+    @Operation(summary = "Get tag by name", description = "Retrieves a tag by its name")
+    @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
+    public ResponseEntity<ApiResponse<TagResponse>> getTagByName(@PathVariable String name) {
+        Tag tag = tagService.getByName(name);
+        if (tag == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Tag not found"));
+        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toTagResponse(tag)));
+    }
 }

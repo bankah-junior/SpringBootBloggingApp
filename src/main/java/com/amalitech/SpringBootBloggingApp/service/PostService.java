@@ -1,5 +1,6 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreatePostRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 public interface PostService {
 
     Post create(Post post);
+
+    Post create(CreatePostRequest request);
 
     Post update(Post post);
 

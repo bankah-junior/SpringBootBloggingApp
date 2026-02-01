@@ -63,8 +63,18 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public List<Tag> findTagsByPostId(String postId) {
-        var query = new Query(Criteria.where("postId").is(postId));
-        return mongoTemplate.find(query, Tag.class, "post_tags");
+        var linkQuery = new Query(Criteria.where("postId").is(postId));
+        List<PostTag> links = mongoTemplate.find(linkQuery, PostTag.class, "post_tags");
+        return links.stream()
+                .map(link -> findById(link.getTagId()).orElse(null))
+                .filter(tag -> tag != null)
+                .toList();
+    }
+
+    @Override
+    public void unassignTagFromPost(String postId, String tagId) {
+        var query = new Query(Criteria.where("postId").is(postId).and("tagId").is(tagId));
+        mongoTemplate.remove(query, "post_tags");
     }
 
     @Override

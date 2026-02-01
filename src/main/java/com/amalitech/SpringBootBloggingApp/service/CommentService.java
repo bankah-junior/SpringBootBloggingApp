@@ -1,5 +1,6 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
+import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentRequest;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 public interface CommentService {
 
     Comment create(Comment comment);
+
+    Comment create(CreateCommentRequest request);
 
     boolean delete(String commentId);
 
