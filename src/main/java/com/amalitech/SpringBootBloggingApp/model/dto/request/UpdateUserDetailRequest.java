@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class UpdateUserDetailRequest {
+    @NotBlank(message = "USer ID is required")
+    private String id;
+
     @Email(message = "Invalid Email!")
     @NotBlank(message = "Email is required!")
     private String email;
@@ -16,9 +19,18 @@ public class UpdateUserDetailRequest {
     public UpdateUserDetailRequest() {
     }
 
-    public UpdateUserDetailRequest(String email, String username) {
+    public UpdateUserDetailRequest(String id, String email, String username) {
+        this.id = id;
         this.email = email;
         this.username = username;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getEmail() {

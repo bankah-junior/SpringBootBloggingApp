@@ -36,10 +36,17 @@ class PostServiceImplTest {
     private Post testPost2;
     private List<Post> testPosts;
 
+    private User testUser;
+    private User testUser2;
+
+
+
     @BeforeEach
     void setUp() {
-        testPost = new Post("697349d17b196ad927aa8a03", "696e40248e370aa034f5f28a", "Test Post", "This is a test post content", true, System.currentTimeMillis(), null);
-        testPost2 = new Post("696e40258e370aa034f5f291", "6972332865b2f32d5ed11f02", "Another Post", "This is another test post content", true, System.currentTimeMillis(), null);
+        testUser = new User("697349d17b196ad927aa8a03", "Sir Kay", "author1@example.com", "Pass123@w", System.currentTimeMillis(), System.currentTimeMillis());
+        testUser2 = new User("696e40258e370aa034f5f291", "Jane Doe", "author2@example.com", "Pass456@w", System.currentTimeMillis(), System.currentTimeMillis());
+        testPost = new Post("697349d17b196ad927aa8a03", testUser, "Test Post", "This is a test post content", true, System.currentTimeMillis(), null, List.of());
+        testPost2 = new Post("696e40258e370aa034f5f291", testUser2, "Another Post", "This is another test post content", true, System.currentTimeMillis(), null, List.of());
         testPosts = List.of(testPost, testPost2);
     }
 
@@ -60,7 +67,7 @@ class PostServiceImplTest {
     @Test
     @DisplayName("Create Invalid Title Throws UserInputsException")
     void create_InvalidTitle_ThrowsUserInputsException() {
-        Post invalidPost = new Post("696e40258e370aa034f5f292", "Sir Kay", "", "author1", true, System.currentTimeMillis(), null);
+        Post invalidPost = new Post("696e40258e370aa034f5f292", testUser, "", "author1", true, System.currentTimeMillis(), null, List.of());
 
         assertThrows(UserInputsException.class, () -> postService.create(invalidPost));
         verify(postRepository, never()).save(any(Post.class));
@@ -69,7 +76,7 @@ class PostServiceImplTest {
     @Test
     @DisplayName("Create Invalid Content Throws UserInputsException")
     void create_InvalidContent_ThrowsUserInputsException() {
-        Post invalidPost = new Post("1", "Valid Title", "", "author1", true, System.currentTimeMillis(), null);
+        Post invalidPost = new Post("696e40258e370aa034f5f292", testUser, "Valid Title", "", true, System.currentTimeMillis(), null, List.of());
 
         assertThrows(UserInputsException.class, () -> postService.create(invalidPost));
         verify(postRepository, never()).save(any(Post.class));
@@ -201,14 +208,14 @@ class PostServiceImplTest {
     @DisplayName("Get By Author Valid Author Id Returns Author Posts")
     void getByAuthor_ValidAuthorId_ReturnsAuthorPosts() {
         List<Post> expectedPosts = List.of(testPost);
-        when(postRepository.findByAuthorId(testPost.getAuthorId())).thenReturn(expectedPosts);
+        when(postRepository.findByAuthorId(testPost.getAuthor().getId())).thenReturn(expectedPosts);
 
-        List<Post> result = postService.getByAuthor(testPost.getAuthorId());
+        List<Post> result = postService.getByAuthor(testPost.getAuthor().getId());
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(testPost.getAuthorId(), result.get(0).getAuthorId());
-        verify(postRepository).findByAuthorId(testPost.getAuthorId());
+        assertEquals(testPost.getAuthor().getId(), result.get(0).getAuthor().getId());
+        verify(postRepository).findByAuthorId(testPost.getAuthor().getId());
     }
 
     @Test

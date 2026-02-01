@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
+import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.CommentRepositoryImpl;
 import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
@@ -35,10 +36,22 @@ class CommentServiceImplTest {
     private Comment testComment2;
     private List<Comment> testComments;
 
+    private Post testPost;
+    private Post testPost2;
+
+    private User testUser;
+    private User testUser2;
+
     @BeforeEach
     void setUp() {
-        testComment = new Comment("697349d17b196ad927aa89fa", "697349d17b196ad927aa89fc", "697349d17b196ad927aa89fe", "This is a test comment", 123456789L, null);
-        testComment2 = new Comment("697349d17b196ad927aa89fb", "697349d17b196ad927aa89fd", "697349d17b196ad927aa89ff", "This is another test comment", 123456790L, null);
+        testUser = new User("697349d17b196ad927aa89fa", "testuser", "testuser@example.com", "password123", 123456789L, null);
+        testUser2 = new User("697349d17b196ad927aa89fb", "testuser2", "testuser2@example.com", "password456", 123456790L, null);
+
+        testPost = new Post("697349d17b196ad927aa89fc", testUser, "Test Post", "This is a test post", true, 123456789L, null, List.of());
+        testPost2 = new Post("697349d17b196ad927aa89fd", testUser2, "Test Post 2", "This is another test post", true, 123456790L, null, List.of());
+
+        testComment = new Comment("697349d17b196ad927aa89fa", testPost, testUser, "This is a test comment", 123456789L, null);
+        testComment2 = new Comment("697349d17b196ad927aa89fb", testPost2, testUser2, "This is another test comment", 123456790L, null);
         testComments = List.of(testComment, testComment2);
     }
 
@@ -51,8 +64,8 @@ class CommentServiceImplTest {
 
         assertNotNull(result);
         assertEquals(testComment.getId(), result.getId());
-        assertEquals(testComment.getPostId(), result.getPostId());
-        assertEquals(testComment.getUserId(), result.getUserId());
+        assertEquals(testComment.getPost().getId(), result.getPost().getId());
+        assertEquals(testComment.getUser().getId(), result.getUser().getId());
         assertEquals(testComment.getContent(), result.getContent());
         verify(commentRepository).save(testComment);
     }
@@ -60,7 +73,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Create Invalid Content Throws UserInputsException")
     void create_InvalidContent_ThrowsUserInputsException() {
-        Comment invalidComment = new Comment("697349d17b196ad927aa89fa", "697349d17b196ad927aa89fc", "697349d17b196ad927aa89fe", "", 123456789L, null);
+        Comment invalidComment = new Comment("697349d17b196ad927aa89fa", testPost, testUser, "", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> commentService.create(invalidComment));
         verify(commentRepository, never()).save(any(Comment.class));
@@ -69,7 +82,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Create Null Content Throws UserInputsException")
     void create_NullContent_ThrowsUserInputsException() {
-        Comment invalidComment = new Comment("697349d17b196ad927aa89fa", "697349d17b196ad927aa89fc", "697349d17b196ad927aa89fe", null, 123456789L, null);
+        Comment invalidComment = new Comment("697349d17b196ad927aa89fa", testPost, testUser, null, 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> commentService.create(invalidComment));
         verify(commentRepository, never()).save(any(Comment.class));
@@ -108,14 +121,14 @@ class CommentServiceImplTest {
     @DisplayName("Get By Post Valid Post Id Returns Post Comments")
     void getByPost_ValidPostId_ReturnsPostComments() {
         List<Comment> expectedComments = List.of(testComment);
-        when(commentRepository.findByPostId(testComment.getPostId())).thenReturn(expectedComments);
+        when(commentRepository.findByPostId(testPost.getId())).thenReturn(expectedComments);
 
-        List<Comment> result = commentService.getByPost(testComment.getPostId());
+        List<Comment> result = commentService.getByPost(testPost.getId());
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(testComment.getPostId(), result.get(0).getPostId());
-        verify(commentRepository).findByPostId(testComment.getPostId());
+        assertEquals(testComment.getPost().getId(), result.get(0).getPost().getId());
+        verify(commentRepository).findByPostId(testPost.getId());
     }
 
     @Test
@@ -141,14 +154,14 @@ class CommentServiceImplTest {
     @DisplayName("Get By User Valid User Id Returns User Comments")
     void getByUser_ValidUserId_ReturnsUserComments() {
         List<Comment> expectedComments = List.of(testComment);
-        when(commentRepository.findByUserId(testComment.getUserId())).thenReturn(expectedComments);
+        when(commentRepository.findByUserId(testUser.getId())).thenReturn(expectedComments);
 
-        List<Comment> result = commentService.getByUser(testComment.getUserId());
+        List<Comment> result = commentService.getByUser(testUser.getId());
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(testComment.getUserId(), result.get(0).getUserId());
-        verify(commentRepository).findByUserId(testComment.getUserId());
+        assertEquals(testComment.getUser().getId(), result.get(0).getUser().getId());
+        verify(commentRepository).findByUserId(testUser.getId());
     }
 
     @Test
@@ -161,12 +174,12 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Get By User No Comments Returns Empty List")
     void getByUser_NoComments_ReturnsEmptyList() {
-        when(commentRepository.findByUserId(testComment.getUserId())).thenReturn(List.of());
+        when(commentRepository.findByUserId(testUser.getId())).thenReturn(List.of());
 
-        List<Comment> result = commentService.getByUser(testComment.getUserId());
+        List<Comment> result = commentService.getByUser(testUser.getId());
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(commentRepository).findByUserId(testComment.getUserId());
+        verify(commentRepository).findByUserId(testUser.getId());
     }
 
     @Test
@@ -183,7 +196,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Update Invalid Comment Id Throws UserInputsException")
     void update_InvalidCommentId_ThrowsUserInputsException() {
-        Comment invalidComment = new Comment("invalid-id", "post1", "user1", "Valid content", 123456789L, null);
+        Comment invalidComment = new Comment("invalid-id", testPost, testUser, "Valid content", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> commentService.update(invalidComment));
         verify(commentRepository, never()).update(any(Comment.class));
@@ -192,7 +205,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Update Invalid Content Throws UserInputsException")
     void update_InvalidContent_ThrowsUserInputsException() {
-        Comment invalidComment = new Comment("1", "post1", "user1", "", 123456789L, null);
+        Comment invalidComment = new Comment("1", testPost, testUser, "", 123456789L, null);
 
         assertThrows(UserInputsException.class, () -> commentService.update(invalidComment));
         verify(commentRepository, never()).update(any(Comment.class));
@@ -243,8 +256,8 @@ class CommentServiceImplTest {
         Comment result = commentService.findById(testComment.getId());
         assertNotNull(result);
         assertEquals(testComment.getId(), result.getId());
-        assertEquals(testComment.getPostId(), result.getPostId());
-        assertEquals(testComment.getUserId(), result.getUserId());
+        assertEquals(testComment.getPost().getId(), result.getPost().getId());
+        assertEquals(testComment.getUser().getId(), result.getUser().getId());
         verify(commentRepository).findById(testComment.getId());
     }
 
@@ -269,7 +282,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Create Comment With Valid Content Calls Repository Save")
     void create_CommentWithValidContent_CallsRepositorySave() {
-        Comment validComment = new Comment("697349d17b196ad927aa8a01", "697349d17b196ad927aa8a01", "697349d17b196ad927aa8a02", "Valid comment content", 123456791L, null);
+        Comment validComment = new Comment("697349d17b196ad927aa8a01", testPost, testUser, "Valid comment content", 123456791L, null);
         when(commentRepository.save(validComment)).thenReturn(validComment);
 
         Comment result = commentService.create(validComment);
@@ -281,7 +294,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Update Comment With Valid Id And Content Calls Repository Update")
     void update_CommentWithValidIdAndContent_CallsRepositoryUpdate() {
-        Comment updatedComment = new Comment(testComment.getId(), "697349d17b196ad927aa8a01", "697349d17b196ad927aa8a02", "Updated comment content", 123456792L, null);
+        Comment updatedComment = new Comment(testComment.getId(), testPost, testUser, "Updated comment content", 123456792L, null);
         when(commentRepository.update(updatedComment)).thenReturn(true);
 
         boolean result = commentService.update(updatedComment);
@@ -304,24 +317,23 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("Get By Post Valid Post Id Returns List Of Comments")
     void getByPost_CommentWithValidPostId_CallsRepositoryFindByPostId() {
-        when(commentRepository.findByPostId(testComment.getPostId())).thenReturn(List.of(testComment));
+        when(commentRepository.findByPostId(testComment.getPost().getId())).thenReturn(List.of(testComment));
 
-        List<Comment> result = commentService.getByPost(testComment.getPostId());
-
+        List<Comment> result = commentService.getByPost(testComment.getPost().getId());
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(commentRepository).findByPostId(testComment.getPostId());
+        verify(commentRepository).findByPostId(testComment.getPost().getId());
     }
 
     @Test
     @DisplayName("Get By User Valid User Id Returns List Of Comments")
     void getByUser_CommentWithValidUserId_CallsRepositoryFindByUserId() {
-        when(commentRepository.findByUserId(testComment.getUserId())).thenReturn(List.of(testComment));
+        when(commentRepository.findByUserId(testComment.getUser().getId())).thenReturn(List.of(testComment));
 
-        List<Comment> result = commentService.getByUser(testComment.getUserId());
+        List<Comment> result = commentService.getByUser(testComment.getUser().getId());
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(commentRepository).findByUserId(testComment.getUserId());
+        verify(commentRepository).findByUserId(testComment.getUser().getId());
     }
 }

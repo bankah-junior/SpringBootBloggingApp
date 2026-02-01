@@ -5,9 +5,15 @@ spring:
       database: blogging_platform
   profiles:
     active: dev
+  graphql:
+    graphiql:
+      enabled: true
 
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
+
+
+

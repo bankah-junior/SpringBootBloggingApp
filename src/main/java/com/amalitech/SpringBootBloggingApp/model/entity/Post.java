@@ -45,6 +45,17 @@ public class Post {
 
     public Post() {}
 
+    public Post(String id, User author, String title, String content, boolean published, Long createdAt, Long updatedAt, List<Review> reviews) {
+        this.id = id;
+        this.author = author;
+        this.title = title;
+        this.content = content;
+        this.published = published;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.reviews = reviews;
+    }
+
     // Getters & Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

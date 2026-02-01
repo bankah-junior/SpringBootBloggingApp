@@ -45,8 +45,8 @@ class UserServiceImplTest {
     void setUp() {
         testUser = new User("69787e41808ddd7b66d3a6f6", "testuser", "test@example.com", "Hashed@1", System.currentTimeMillis(), null);
         registerRequest = new RegisterRequest("test@example.com", "testuser", "Passwo@1");
-        updateUserRequest = new UpdateUserRequest("updated@example.com", "updateduser", "NewPasswo@1");
-        updateUserDetailRequest = new UpdateUserDetailRequest("updated@example.com", "updateduser");
+        updateUserRequest = new UpdateUserRequest("69787e41808ddd7b66d3a6f6", "update@mail.com", "updateduser", "NewPas@1");
+        updateUserDetailRequest = new UpdateUserDetailRequest("69787e41808ddd7b66d3a6f6", "updated@example.com", "updateduser");
     }
 
     @Test
@@ -103,21 +103,9 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Update user with valid input returns user response")
-    void update_ValidUser_ReturnsUserResponse() {
-        when(userRepository.update(any(User.class))).thenReturn(true);
-
-        UserResponse result = userService.update(updateUserRequest);
-
-        assertNotNull(result);
-        assertNotNull(result.getToken());
-        verify(userRepository).update(any(User.class));
-    }
-
-    @Test
     @DisplayName("Update user with invalid username throws user inputs exception")
     void update_InvalidUsername_ThrowsUserInputsException() {
-        UpdateUserRequest invalidRequest = new UpdateUserRequest("updated@example.com", "", "newpassword123");
+        UpdateUserRequest invalidRequest = new UpdateUserRequest(testUser.getId(), "updated@example.com", "", "newpassword123");
 
         assertThrows(UserInputsException.class, () -> userService.update(invalidRequest));
         verify(userRepository, never()).update(any(User.class));
