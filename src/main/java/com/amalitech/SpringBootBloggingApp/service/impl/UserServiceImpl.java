@@ -5,6 +5,7 @@ import com.amalitech.SpringBootBloggingApp.model.dto.request.LoginRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.RegisterRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserDetailRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.UserRepositoryImpl;
@@ -190,6 +191,14 @@ public class UserServiceImpl implements UserService {
                     token
             );
         }).toList();
+    }
+
+    @Override
+    public PageResponse<User> getAllPaginated(int page, int size) {
+        long total = userRepository.count();
+        int skip = page * size;
+        var content = userRepository.findAll(skip, size);
+        return new PageResponse<>(content, page, size, total);
     }
 
     @Override

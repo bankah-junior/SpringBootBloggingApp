@@ -1,6 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreatePostRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public interface PostService {
     Post getById(String postId);
 
     List<Post> getAll();
+
+    PageResponse<Post> getAllPaginated(int page, int size);
 
     List<Post> searchByTitle(String keyword);
 

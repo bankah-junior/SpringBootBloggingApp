@@ -1,6 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateReviewRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 
 import java.util.List;
@@ -27,4 +28,6 @@ public interface ReviewService {
     double getAverageRatingForPost(com.amalitech.SpringBootBloggingApp.model.entity.Post post);
 
     List<Review> getAll();
+
+    PageResponse<Review> getAllPaginated(int page, int size);
 }

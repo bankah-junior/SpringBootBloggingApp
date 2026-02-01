@@ -1,6 +1,7 @@
 package com.amalitech.SpringBootBloggingApp.service;
 
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 
 import java.util.List;
@@ -23,5 +24,7 @@ public interface CommentService {
 
     List<Comment> getAll();
 
-     Comment findById(String commentId);
+    PageResponse<Comment> getAllPaginated(int page, int size);
+
+    Comment findById(String commentId);
 }

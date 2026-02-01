@@ -4,10 +4,10 @@ import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreatePostRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdatePostRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.PostResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.service.PostService;
-import com.amalitech.SpringBootBloggingApp.util.exceptions.UserInputsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -91,19 +91,15 @@ public class PostController {
     @PutMapping("/update")
     @Operation(summary = "Update a post", description = "Updates a post")
     @Tag(name = "Post")
-    public ResponseEntity<?> updatePost(@Valid @RequestBody UpdatePostRequest request) {
-        try {
-            Post existing = postService.getById(request.getId());
-            if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            existing.setTitle(request.getTitle());
-            existing.setContent(request.getContent());
-            existing.setPublished(request.isPublished());
-            existing.setUpdatedAt(System.currentTimeMillis());
-            Post updatedPost = postService.update(existing);
-            return ResponseEntity.ok(DtoMapper.toPostResponse(updatedPost));
-        } catch (UserInputsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ApiResponse<PostResponse>> updatePost(@Valid @RequestBody UpdatePostRequest request) {
+        Post existing = postService.getById(request.getId());
+        if (existing == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Post not found"));
+        existing.setTitle(request.getTitle());
+        existing.setContent(request.getContent());
+        existing.setPublished(request.isPublished());
+        existing.setUpdatedAt(System.currentTimeMillis());
+        Post updatedPost = postService.update(existing);
+        return ResponseEntity.ok(ApiResponse.success("Post updated", DtoMapper.toPostResponse(updatedPost)));
     }
 
     /**
@@ -121,16 +117,18 @@ public class PostController {
     }
 
     /**
-     * Get all posts
-     *
-     * @return ResponseEntity with list of posts if successful, or bad request with error message if not
+     * Get all posts (optional pagination: page, size).
      */
     @GetMapping("/all")
-    @Operation(summary = "Get all posts", description = "Retrieves all posts")
+    @Operation(summary = "Get all posts", description = "Retrieves all posts. Use page and size for pagination.")
     @Tag(name = "Post")
-    public ResponseEntity<ApiResponse<List<PostResponse>>> getAllPosts() {
-        List<Post> posts = postService.getAll();
-        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toPostResponses(posts)));
+    public ResponseEntity<ApiResponse<?>> getAllPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageResponse<Post> pr = postService.getAllPaginated(page, size);
+        PageResponse<PostResponse> dto = new PageResponse<>(
+                DtoMapper.toPostResponses(pr.getContent()), pr.getPage(), pr.getSize(), pr.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     /**

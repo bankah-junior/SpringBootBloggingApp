@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreatePostRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 import com.amalitech.SpringBootBloggingApp.repository.impl.PostRepositoryImpl;
@@ -79,6 +80,14 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getAll() {
         return postRepository.findAll();
+    }
+
+    @Override
+    public PageResponse<Post> getAllPaginated(int page, int size) {
+        long total = postRepository.count();
+        int skip = page * size;
+        var content = postRepository.findAll(skip, size);
+        return new PageResponse<>(content, page, size, total);
     }
 
     @Override

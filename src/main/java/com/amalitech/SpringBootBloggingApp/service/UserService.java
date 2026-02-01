@@ -4,6 +4,7 @@ import com.amalitech.SpringBootBloggingApp.model.dto.request.LoginRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.RegisterRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserDetailRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateUserRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.UserResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
 
@@ -24,6 +25,8 @@ public interface UserService {
     UserResponse getByEmail(String email);
 
     List<UserResponse> getAll();
+
+    PageResponse<User> getAllPaginated(int page, int size);
 
     boolean updateUserDetails(String userId, UpdateUserDetailRequest user);
 

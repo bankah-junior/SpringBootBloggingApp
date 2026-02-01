@@ -4,6 +4,7 @@ import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateReviewRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.UpdateReviewRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ReviewResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Review;
 import com.amalitech.SpringBootBloggingApp.service.ReviewService;

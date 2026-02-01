@@ -3,6 +3,7 @@ package com.amalitech.SpringBootBloggingApp.controller;
 import com.amalitech.SpringBootBloggingApp.model.dto.DtoMapper;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateTagRequest;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.ApiResponse;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.dto.response.TagResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Tag;
 import com.amalitech.SpringBootBloggingApp.service.TagService;
@@ -24,11 +25,14 @@ public class TagController {
     }
 
     @GetMapping("/all")
-    @Operation(summary = "Get all tags", description = "Retrieves a list of all tags")
+    @Operation(summary = "Get all tags", description = "Retrieves tags with optional pagination (page, size).")
     @io.swagger.v3.oas.annotations.tags.Tag(name = "Tag")
-    public ResponseEntity<ApiResponse<List<TagResponse>>> getAllTags() {
-        List<Tag> tags = tagService.getAll();
-        return ResponseEntity.ok(ApiResponse.success(DtoMapper.toTagResponses(tags)));
+    public ResponseEntity<ApiResponse<PageResponse<TagResponse>>> getAllTags(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        var pr = tagService.getAllPaginated(page, size);
+        var dto = new PageResponse<>(DtoMapper.toTagResponses(pr.getContent()), pr.getPage(), pr.getSize(), pr.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     @PostMapping("/create")

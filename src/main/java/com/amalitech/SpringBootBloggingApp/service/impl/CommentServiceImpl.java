@@ -2,6 +2,7 @@ package com.amalitech.SpringBootBloggingApp.service.impl;
 
 import com.amalitech.SpringBootBloggingApp.cache.Cache;
 import com.amalitech.SpringBootBloggingApp.model.dto.request.CreateCommentRequest;
+import com.amalitech.SpringBootBloggingApp.model.dto.response.PageResponse;
 import com.amalitech.SpringBootBloggingApp.model.entity.Comment;
 import com.amalitech.SpringBootBloggingApp.model.entity.Post;
 import com.amalitech.SpringBootBloggingApp.model.entity.User;
@@ -103,7 +104,15 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findAll();
     }
 
-     @Override
+    @Override
+    public PageResponse<Comment> getAllPaginated(int page, int size) {
+        long total = commentRepository.count();
+        int skip = page * size;
+        var content = commentRepository.findAll(skip, size);
+        return new PageResponse<>(content, page, size, total);
+    }
+
+    @Override
     public Comment findById(String commentId) {
         if(!ValidationUtil.isValidObjectId(commentId)) {
             throw new UserInputsException("Invalid comment ID");
