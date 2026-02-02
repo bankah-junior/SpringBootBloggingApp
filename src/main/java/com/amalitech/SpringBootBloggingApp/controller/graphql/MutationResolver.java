@@ -132,7 +132,6 @@ public class MutationResolver {
         return postService.create(post);
     }
 
-
     @MutationMapping
     public UserResponse updateUser(@Argument UpdateUserDetailRequest input) {
         UserResponse existingUser = userService.getById(input.getId());
